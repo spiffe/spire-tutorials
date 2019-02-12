@@ -18,7 +18,7 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: client
-          image: gcr.io/spiffe-io/spire-k8s
+          image: gcr.io/spiffe-io/spire-k8s:0.7.3
           args: ["/bin/bash", "-c", "sleep infinity"]
           volumeMounts:
             - name: spire-agent-socket

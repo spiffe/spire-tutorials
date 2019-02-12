@@ -21,7 +21,7 @@ spec:
       serviceAccountName: spire-agent
       containers:
         - name: spire-agent
-          image: gcr.io/spiffe-io/spire-k8s:0.7.1
+          image: gcr.io/spiffe-io/spire-k8s:0.7.3
           args: ["/bin/bash", "-c", "/opt/spire/bin/spire-agent run -config /run/spire/config/agent.conf"]
           volumeMounts:
             - name: spire-config

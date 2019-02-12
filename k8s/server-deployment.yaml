@@ -25,7 +25,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: spire-server
-          image: gcr.io/spiffe-io/spire-k8s:0.7.1
+          image: gcr.io/spiffe-io/spire-k8s:0.7.3
           args: ["/bin/bash", "-c", "/opt/spire/bin/spire-server run -config /run/spire/config/server.conf"]
           ports:
             - containerPort: 8081
