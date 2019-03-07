@@ -21,8 +21,8 @@ spec:
       serviceAccountName: spire-agent
       containers:
         - name: spire-agent
-          image: gcr.io/spiffe-io/spire-k8s:0.7.1
-          args: ["/bin/bash", "-c", "/opt/spire/bin/spire-agent run -config /run/spire/config/agent.conf"]
+          image: gcr.io/spiffe-io/spire-agent:0.7.3
+          args: ["-config", "/run/spire/config/agent.conf"]
           volumeMounts:
             - name: spire-config
               mountPath: /run/spire/config
@@ -34,7 +34,9 @@ spec:
             failureThreshold: 2
             exec:
               command:
-                - /opt/spire/bin/agent-healthcheck
+                - /bin/sh
+                - -c
+                - "/opt/spire/bin/spire-agent api fetch -socketPath /run/spire/sockets/agent.sock 2>&1 | grep -vqE 'connection refused|no such file or directory'"
             initialDelaySeconds: 15
             periodSeconds: 60
             timeoutSeconds: 3
