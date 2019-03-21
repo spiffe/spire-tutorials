@@ -33,14 +33,6 @@ start_minikube() {
 }
 
 tear_down_config() {
-	kubectl delete daemonset spire-agent --namespace spire > /dev/null || true
-	kubectl delete configmap spire-agent --namespace spire > /dev/null || true
-	kubectl delete serviceaccount spire-agent --namespace spire > /dev/null || true
-	kubectl delete deployment spire-server --namespace spire > /dev/null || true
-	kubectl delete service spire-server --namespace spire > /dev/null || true
-	kubectl delete configmap spire-server --namespace spire > /dev/null || true
-	kubectl delete secrets spire-server --namespace spire > /dev/null || true
-	kubectl delete serviceaccount spire-server --namespace spire > /dev/null || true
 	kubectl delete namespace spire > /dev/null || true
 }
 
@@ -69,7 +61,7 @@ apply_server_config() {
 	kubectl apply -f ${CONFDIR}/server-account.yaml > /dev/null
 	kubectl apply -f ${CONFDIR}/server-secrets.yaml > /dev/null
 	kubectl apply -f ${CONFDIR}/server-configmap.yaml > /dev/null
-	kubectl apply -f ${CONFDIR}/server-deployment.yaml > /dev/null
+	kubectl apply -f ${CONFDIR}/server-statefulset.yaml > /dev/null
 	kubectl apply -f ${CONFDIR}/server-service.yaml > /dev/null
 	echo "${green}ok.${norm}"
 }

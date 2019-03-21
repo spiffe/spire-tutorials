@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: spire-server
   namespace: spire
@@ -10,6 +10,7 @@ spec:
   selector:
     matchLabels:
       app: spire-server
+  serviceName: spire-server
   template:
     metadata:
       namespace: spire
@@ -17,12 +18,6 @@ spec:
         app: spire-server
     spec:
       serviceAccountName: spire-server
-      nodeSelector:
-          node-role.kubernetes.io/master: ""
-      tolerations:
-        # NOTE: Change this if the cluster has no accessible master node
-        - key: node-role.kubernetes.io/master
-          effect: NoSchedule
       containers:
         - name: spire-server
           image: gcr.io/spiffe-io/spire-server:0.7.3
@@ -43,9 +38,9 @@ spec:
               mountPath: /run/k8s-certs/sa.pub
               readOnly: true
           livenessProbe:
-            failureThreshold: 2
             tcpSocket:
               port: 8081
+            failureThreshold: 2
             initialDelaySeconds: 15
             periodSeconds: 60
             timeoutSeconds: 3
@@ -55,14 +50,19 @@ spec:
             name: spire-server
         - name: spire-secrets
           secret:
-              secretName: spire-server
-        - name: spire-data
-          hostPath:
-            # NOTE: This should be a persistent volume on the master node's host
-            path: /opt/spire/data
-            type: DirectoryOrCreate
+            secretName: spire-server
         - name: k8s-sa-cert
           hostPath:
             # NOTE: Change to the kube-apiserver's service account certificate
             path: /var/lib/minikube/certs/sa.pub
             type: File
+  volumeClaimTemplates:
+    - metadata:
+        name: spire-data
+        namespace: spire
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
