@@ -1,3 +1,3 @@
 # spire-tutorials
 
-Example files referenced by the tutorials at http://spiffe.io
+Example files referenced by the tutorials at https://spiffe.io
