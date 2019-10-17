@@ -8,14 +8,16 @@ data:
     server {
       bind_address = "0.0.0.0"
       bind_port = "8081"
+      registration_uds_path = "/tmp/spire-registration.sock"
       trust_domain = "example.org"
       data_dir = "/run/spire/data"
       log_level = "DEBUG"
+      upstream_bundle = true
       svid_ttl = "1h"
       ca_subject = {
-        Country = ["US"],
-        Organization = ["SPIFFE"],
-        CommonName = "",
+        country = ["US"],
+        organization = ["SPIFFE"],
+        common_name = "",
       }
     }
 
@@ -51,7 +53,7 @@ data:
 
       UpstreamCA "disk" {
         plugin_data {
-          ttl = "12h"
+          ttl = "1h"
           key_file_path = "/run/spire/secrets/bootstrap.key"
           cert_file_path = "/run/spire/config/bootstrap.crt"
         }
