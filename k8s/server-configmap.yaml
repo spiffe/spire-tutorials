@@ -58,6 +58,11 @@ data:
           cert_file_path = "/run/spire/config/bootstrap.crt"
         }
       }
+
+      Notifier "k8sbundle" {
+        plugin_data {
+        }
+      }
     }
   bootstrap.crt: |
     -----BEGIN CERTIFICATE-----
