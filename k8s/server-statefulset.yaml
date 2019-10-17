@@ -55,6 +55,7 @@ spec:
         - name: spire-secrets
           secret:
             secretName: spire-server
+        # NOTE: The the k8s-sa-cert volume can be removed if using the token-review API
         - name: k8s-sa-cert
           hostPath:
             # NOTE: Change to the kube-apiserver's service account certificate
