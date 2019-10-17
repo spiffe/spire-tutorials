@@ -30,9 +30,6 @@ spec:
             - name: spire-config
               mountPath: /run/spire/config
               readOnly: true
-            - name: spire-secrets
-              mountPath: /run/spire/secrets
-              readOnly: true
             - name: spire-data
               mountPath: /run/spire/data
               readOnly: false
@@ -52,9 +49,6 @@ spec:
         - name: spire-config
           configMap:
             name: spire-server
-        - name: spire-secrets
-          secret:
-            secretName: spire-server
         # NOTE: The the k8s-sa-cert volume can be removed if using the token-review API
         - name: k8s-sa-cert
           hostPath:
