@@ -33,9 +33,6 @@ spec:
             - name: spire-data
               mountPath: /run/spire/data
               readOnly: false
-            - name: k8s-sa-cert
-              mountPath: /run/k8s-certs/sa.pub
-              readOnly: true
           livenessProbe:
             exec:
               command:
@@ -49,12 +46,6 @@ spec:
         - name: spire-config
           configMap:
             name: spire-server
-        # NOTE: The the k8s-sa-cert volume can be removed if using the token-review API
-        - name: k8s-sa-cert
-          hostPath:
-            # NOTE: Change to the kube-apiserver's service account certificate
-            path: /var/lib/minikube/certs/sa.pub
-            type: File
   volumeClaimTemplates:
     - metadata:
         name: spire-data
