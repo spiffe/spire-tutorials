@@ -59,7 +59,6 @@ apply_server_config() {
 	echo -n "${bold}Applying SPIRE server k8s configuration... ${norm}"
 	kubectl apply -f ${CONFDIR}/spire-namespace.yaml > /dev/null
 	kubectl apply -f ${CONFDIR}/server-account.yaml > /dev/null
-	kubectl apply -f ${CONFDIR}/server-secrets.yaml > /dev/null
 	kubectl apply -f ${CONFDIR}/server-configmap.yaml > /dev/null
 	kubectl apply -f ${CONFDIR}/server-statefulset.yaml > /dev/null
 	kubectl apply -f ${CONFDIR}/server-service.yaml > /dev/null
