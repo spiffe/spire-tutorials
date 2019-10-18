@@ -34,7 +34,6 @@ data:
           clusters = {
             # NOTE: Change this to your cluster name
             "demo-cluster" = {
-              # NOTE: Un-comment this line, and comment out service_account_key_file to use the token-review API
               use_token_review_api_validation = true
               service_account_whitelist = ["spire:spire-agent"]
             }
