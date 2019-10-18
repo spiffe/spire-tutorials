@@ -20,7 +20,7 @@ spec:
       serviceAccountName: spire-server
       containers:
         - name: spire-server
-          image: gcr.io/spiffe-io/spire-server:0.8.0
+          image: gcr.io/spiffe-io/spire-server:a211e075c1f44026efdeb89e9a9081e1898d5214
           args:
             - -config
             - /run/spire/config/server.conf
@@ -30,15 +30,9 @@ spec:
             - name: spire-config
               mountPath: /run/spire/config
               readOnly: true
-            - name: spire-secrets
-              mountPath: /run/spire/secrets
-              readOnly: true
             - name: spire-data
               mountPath: /run/spire/data
               readOnly: false
-            - name: k8s-sa-cert
-              mountPath: /run/k8s-certs/sa.pub
-              readOnly: true
           livenessProbe:
             exec:
               command:
@@ -52,14 +46,6 @@ spec:
         - name: spire-config
           configMap:
             name: spire-server
-        - name: spire-secrets
-          secret:
-            secretName: spire-server
-        - name: k8s-sa-cert
-          hostPath:
-            # NOTE: Change to the kube-apiserver's service account certificate
-            path: /var/lib/minikube/certs/sa.pub
-            type: File
   volumeClaimTemplates:
     - metadata:
         name: spire-data
