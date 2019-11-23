@@ -42,7 +42,10 @@ spec:
           livenessProbe:
             exec:
               command:
-                - /opt/spire/bin/spire-agent healthcheck -socketPath /run/spire/sockets/agent.sock
+                - /opt/spire/bin/spire-agent
+                - healthcheck
+                - -socketPath
+                - /run/spire/sockets/agent.sock
             failureThreshold: 2
             initialDelaySeconds: 15
             periodSeconds: 60

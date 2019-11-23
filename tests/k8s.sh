@@ -59,7 +59,9 @@ apply_server_config() {
 	echo -n "${bold}Applying SPIRE server k8s configuration... ${norm}"
 	kubectl apply -f ${CONFDIR}/spire-namespace.yaml > /dev/null
 	kubectl apply -f ${CONFDIR}/server-account.yaml > /dev/null
+	kubectl apply -f ${CONFDIR}/server-cluster-role.yaml > /dev/null
 	kubectl apply -f ${CONFDIR}/server-configmap.yaml > /dev/null
+	kubectl apply -f ${CONFDIR}/spire-bundle-configmap.yaml > /dev/null
 	kubectl apply -f ${CONFDIR}/server-statefulset.yaml > /dev/null
 	kubectl apply -f ${CONFDIR}/server-service.yaml > /dev/null
 	echo "${green}ok.${norm}"
@@ -68,6 +70,7 @@ apply_server_config() {
 apply_agent_config() {
 	echo -n "${bold}Applying SPIRE agent k8s configuration... ${norm}"
 	kubectl apply -f ${CONFDIR}/agent-account.yaml > /dev/null
+	kubectl apply -f ${CONFDIR}/agent-cluster-role.yaml > /dev/null
 	kubectl apply -f ${CONFDIR}/agent-configmap.yaml > /dev/null
 	kubectl apply -f ${CONFDIR}/agent-daemonset.yaml > /dev/null
 	echo "${green}ok.${norm}"
@@ -116,7 +119,7 @@ check_for_node_attestation() {
 		sleep ${CHECKINTERVAL}
 		echo -n "${bold}Checking for node attestation... ${norm}"
 		kubectl -n spire logs ${SPIRE_SERVER_POD_NAME} > ${SERVERLOGS} || true
-		if  grep -sxq -e ".*Node attestation request .* completed .* k8s_sat.*" ${SERVERLOGS}; then
+		if  grep -sxq -e ".*Node attestation request completed.*k8s_sat.*" ${SERVERLOGS}; then
 			echo "${green}ok${norm}."
 			return
 		fi
