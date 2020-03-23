@@ -7,7 +7,7 @@ data:
   oidc-discovery-provider.conf: |
     log_level = "INFO"
     # NOTE: Replace MY_DISCOVERY_DOMAIN with the OIDC Discovery Provider FQDN
-    domain = MY_DISCOVERY_DOMAIN
+    domain = "MY_DISCOVERY_DOMAIN"
     acme {
         directory_url = "https://acme-staging-v02.api.letsencrypt.org/directory"
         cache_dir = "/run/spire"
