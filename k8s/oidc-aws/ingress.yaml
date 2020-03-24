@@ -6,11 +6,11 @@ metadata:
 spec:
   tls:
     - hosts:
-        # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you configured in DNS
+        # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you will configure in DNS
         - MY_DISCOVERY_DOMAIN
       secretName: oidc-secret
   rules:
-    # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you configured in DNS
+    # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you will configure in DNS
     - host: MY_DISCOVERY_DOMAIN
       http:
         paths:

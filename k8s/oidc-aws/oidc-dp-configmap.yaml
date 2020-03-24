@@ -6,7 +6,7 @@ metadata:
 data:
   oidc-discovery-provider.conf: |
     log_level = "INFO"
-    # NOTE: Replace MY_DISCOVERY_DOMAIN with the OIDC Discovery Provider FQDN
+    # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you will configure in DNS
     domain = "MY_DISCOVERY_DOMAIN"
     acme {
         directory_url = "https://acme-staging-v02.api.letsencrypt.org/directory"
