@@ -9,7 +9,7 @@ green=$(tput setaf 2)
 yellow=$(tput setaf 3)
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-CONFDIR=$(realpath "${DIR}/../k8s")
+CONFDIR=$(realpath "${DIR}/../k8s/quickstart")
 
 MINIKUBEPROFILE="SPIRE-SYSTEMS-TEST"
 MINIKUBECMD="minikube -p ${MINIKUBEPROFILE}"

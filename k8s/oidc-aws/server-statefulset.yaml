@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: spire-server
+  namespace: spire
+  labels:
+    app: spire-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spire-server
+  serviceName: spire-server
+  template:
+    metadata:
+      namespace: spire
+      labels:
+        app: spire-server
+    spec:
+      serviceAccountName: spire-server
+      shareProcessNamespace: true
+      containers:
+        - name: spire-server
+          image: gcr.io/spiffe-io/spire-server:0.9.3
+          args:
+            - -config
+            - /run/spire/config/server.conf
+          ports:
+            - containerPort: 8081
+          volumeMounts:
+            - name: spire-config
+              mountPath: /run/spire/config
+              readOnly: true
+            - name: spire-data
+              mountPath: /run/spire/data
+              readOnly: false
+            - name: spire-server-socket
+              mountPath: /run/spire/sockets
+              readOnly: false
+          livenessProbe:
+            exec:
+              command: ["/opt/spire/bin/spire-server", "healthcheck", "-registrationUDSPath", "/run/spire/sockets/registration.sock"]
+            failureThreshold: 2
+            initialDelaySeconds: 15
+            periodSeconds: 60
+            timeoutSeconds: 3
+        - name: spire-oidc
+          image: gcr.io/spiffe-io/oidc-discovery-provider:0.9.3
+          args:
+          - -config
+          - /run/spire/oidc/config/oidc-discovery-provider.conf
+          ports:
+          - containerPort: 443
+            name: spire-oidc-port
+          volumeMounts:
+          - name: spire-server-socket
+            mountPath: /run/spire/sockets
+            readOnly: true
+          - name: spire-oidc-config
+            mountPath: /run/spire/oidc/config/
+            readOnly: true
+          - name: spire-data
+            mountPath: /run/spire/data
+            readOnly: false
+          readinessProbe:
+            exec:
+              command: ["/bin/ps", "aux", " ||", "grep", "oidc-discovery-provider -config /run/spire/oidc/config/oidc-discovery-provider.conf"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: spire-config
+          configMap:
+            name: spire-server
+        - name: spire-server-socket
+          hostPath:
+            path: /run/spire/sockets/server
+            type: DirectoryOrCreate
+        - name: spire-oidc-config
+          configMap:
+            name: oidc-discovery-provider
+  volumeClaimTemplates:
+    - metadata:
+        name: spire-data
+        namespace: spire
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
