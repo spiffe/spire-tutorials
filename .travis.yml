@@ -12,6 +12,8 @@ env:
 before_script:
   # Make root mounted as rshared to fix kube-dns issues.
   - sudo mount --make-rshared /
+  # Install conntrack which is required for minikube since v1.18.0
+  - sudo apt-get install -y conntrack
   # Download kubectl, which is a requirement for using minikube.
   - curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v1.13.2/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
   # Download minikube.
