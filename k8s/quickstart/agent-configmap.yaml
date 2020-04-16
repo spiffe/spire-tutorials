@@ -30,6 +30,9 @@ data:
 
       WorkloadAttestor "k8s" {
         plugin_data {
+          # Defaults to the secure kubelet port by default.
+          # Minikube does not have a cert in the cluster CA bundle that
+          # can authenticate the kubelet cert, so skip validation.
           skip_kubelet_verification = true
         }
       }
