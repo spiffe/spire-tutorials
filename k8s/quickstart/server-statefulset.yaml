@@ -20,7 +20,7 @@ spec:
       serviceAccountName: spire-server
       containers:
         - name: spire-server
-          image: gcr.io/spiffe-io/spire-server:429286051c1e0d729be2bec8d7ee26204494cf7a
+          image: gcr.io/spiffe-io/spire-server:0.10.0
           args:
             - -config
             - /run/spire/config/server.conf
