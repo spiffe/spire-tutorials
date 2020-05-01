@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-2
+spec:
+  ports:
+   - port: 3002
+     name: http
+     protocol: TCP
+     targetPort: 3002
+  selector:
+      app: frontend-2
+  type: LoadBalancer

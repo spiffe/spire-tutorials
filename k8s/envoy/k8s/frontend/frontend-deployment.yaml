@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      hostPID: true
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: envoy
+        image: envoyproxy/envoy-alpine:v1.14.1
+        imagePullPolicy: Always
+        args: ["-l", "debug", "--local-address-ip-version", "v4", "-c", "/run/envoy/envoy.yaml", "--base-id", "1"]
+        volumeMounts:
+        - name: envoy-config
+          mountPath: "/run/envoy"
+          readOnly: true 
+        - name: spire-agent-socket
+          mountPath: /run/spire/sockets
+          readOnly: true          
+      - name: frontend
+        imagePullPolicy: IfNotPresent
+        image: us.gcr.io/scytale-registry/symbank-webapp:1.1.0
+        command: ["/opt/symbank-webapp/symbank-webapp", "-config", "/run/symbank-webapp/config/symbank-webapp.conf"]
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: symbank-webapp-config
+          mountPath: /run/symbank-webapp/config
+      volumes:
+      - name: envoy-config
+        configMap:
+          name: frontend-envoy
+      - name: spire-agent-socket
+        hostPath:
+          path: /run/spire/sockets
+          type: DirectoryOrCreate
+      - name: symbank-webapp-config
+        configMap:
+          name: symbank-webapp-config

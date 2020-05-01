@@ -1,0 +1,33 @@
+{
+  "transactions": [
+    {
+      "description": "Kohls: Crhistmas decorations",
+      "debit": 20
+    },
+    {
+      "description": "Alms from the collections",
+      "credit": 450
+    },
+    {
+      "description": "Khols: Christmas cards",
+      "debit": 20
+    },
+    {
+      "description": "Cash withdrawl",
+      "debit": 600
+    },
+    {
+      "description": "Pay from employer",
+      "credit": 6000
+    },
+    {
+      "description": "Health Insurance: Tiny Tim",
+      "debit": 5000
+    },
+    {
+      "description": "Opening Balance",
+      "debit": 10000
+    }
+
+  ]
+}
