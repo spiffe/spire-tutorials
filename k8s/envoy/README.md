@@ -1,5 +1,5 @@
-[Configure Envoy to perform X.509 SVID authentication on a workload's behalf] 
-[Using SPIRE to automatically deliver TLS certificates to Envoy] 
+[Configure Envoy to perform X.509 SVID authentication on a workload's behalf]
+[Using SPIRE to automatically deliver TLS certificates to Envoy]
 
 # Overview
 
@@ -16,7 +16,7 @@ As states in the diagram, the front-end services connect to the back-end service
 
 In this tutorial you will learn how to:
 
-* Set up SDS support in SPIRE 
+* Set up SDS support in SPIRE
 * Configure Envoy SDS to consume X.509 certificates provided by SPIRE
 
 
@@ -242,7 +242,7 @@ We'll accomplish this by removing one of the `principals` listed on the RBAC rul
       http_filters:
       - name: envoy.filters.http.rbac
          config:
-         rules: 
+         rules:
             action: ALLOW
             policies:
                "general-rules":
@@ -263,7 +263,7 @@ To update the Envoy configuration for our backend workload we use `backend-envoy
 And now let's delete the backend pod so it is recreated using the new configuration
 
    ```console
-   $ kubectl delete pod $(kubectl get pods --selector=app=backend --output=jsonpath="{..metadata.name}") 
+   $ kubectl delete pod $(kubectl get pods --selector=app=backend --output=jsonpath="{..metadata.name}")
    ```
 
 Wait some seconds until de pods is running and ready before trying to hit the backend via frontend-2 service again.
