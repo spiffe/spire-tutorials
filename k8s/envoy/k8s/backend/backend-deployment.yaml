@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      hostPID: true
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: envoy
+        image: envoyproxy/envoy-alpine:v1.14.1
+        imagePullPolicy: Always
+        args: ["-l", "debug", "--local-address-ip-version", "v4", "-c", "/run/envoy/envoy.yaml"]
+        ports:
+        - containerPort: 9001
+        volumeMounts:
+        - name: envoy-config
+          mountPath: "/run/envoy"
+          readOnly: true
+        - name: spire-agent-socket
+          mountPath: /run/spire/sockets
+          readOnly: true
+      - name: backend
+        image: nginx
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: backend-balance-json-data
+          mountPath: "/usr/share/nginx/html/balances"
+          readOnly: true
+        - name: backend-profile-json-data
+          mountPath: "/usr/share/nginx/html/profiles"
+          readOnly: true
+        - name: backend-transactions-json-data
+          mountPath: "/usr/share/nginx/html/transactions"
+          readOnly: true
+      volumes:
+      - name: envoy-config
+        configMap:
+          name: backend-envoy
+      - name: spire-agent-socket
+        hostPath:
+          path: /run/spire/sockets
+          type: Directory
+      - name: backend-balance-json-data
+        configMap:
+          name: backend-balance-json-data
+      - name: backend-profile-json-data
+        configMap:
+          name: backend-profile-json-data          
+      - name: backend-transactions-json-data
+        configMap:
+          name: backend-transactions-json-data
