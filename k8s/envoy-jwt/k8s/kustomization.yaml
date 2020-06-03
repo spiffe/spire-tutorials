@@ -1,0 +1,19 @@
+configMapGenerator:
+- name: backend-envoy
+  files:
+    - backend/config/envoy.yaml
+- name: be-envoy-jwt-auth-helper-config
+  files:
+    - backend/config/envoy-jwt-auth-helper.conf
+- name: frontend-envoy
+  files:
+    - frontend/config/envoy.yaml
+- name: fe-envoy-jwt-auth-helper-config
+  files:
+    - frontend/config/envoy-jwt-auth-helper.conf
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+  - backend/backend-deployment.yaml
+  - frontend/frontend-deployment.yaml
