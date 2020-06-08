@@ -9,7 +9,6 @@ green=$(tput setaf 2)
 yellow=$(tput setaf 3)
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-CONFDIR=$(realpath "${DIR}/../k8s/quickstart")
 
 MINIKUBEPROFILE="SPIRE-SYSTEMS-TEST"
 MINIKUBECMD="minikube -p ${MINIKUBEPROFILE}"
@@ -57,22 +56,22 @@ cleanup() {
 # apply the k8s configuration
 apply_server_config() {
 	echo -n "${bold}Applying SPIRE server k8s configuration... ${norm}"
-	kubectl apply -f ${CONFDIR}/spire-namespace.yaml > /dev/null
-	kubectl apply -f ${CONFDIR}/server-account.yaml > /dev/null
-	kubectl apply -f ${CONFDIR}/server-cluster-role.yaml > /dev/null
-	kubectl apply -f ${CONFDIR}/server-configmap.yaml > /dev/null
-	kubectl apply -f ${CONFDIR}/spire-bundle-configmap.yaml > /dev/null
-	kubectl apply -f ${CONFDIR}/server-statefulset.yaml > /dev/null
-	kubectl apply -f ${CONFDIR}/server-service.yaml > /dev/null
+	kubectl apply -f ${DIR}/spire-namespace.yaml > /dev/null
+	kubectl apply -f ${DIR}/server-account.yaml > /dev/null
+	kubectl apply -f ${DIR}/server-cluster-role.yaml > /dev/null
+	kubectl apply -f ${DIR}/server-configmap.yaml > /dev/null
+	kubectl apply -f ${DIR}/spire-bundle-configmap.yaml > /dev/null
+	kubectl apply -f ${DIR}/server-statefulset.yaml > /dev/null
+	kubectl apply -f ${DIR}/server-service.yaml > /dev/null
 	echo "${green}ok.${norm}"
 }
 
 apply_agent_config() {
 	echo -n "${bold}Applying SPIRE agent k8s configuration... ${norm}"
-	kubectl apply -f ${CONFDIR}/agent-account.yaml > /dev/null
-	kubectl apply -f ${CONFDIR}/agent-cluster-role.yaml > /dev/null
-	kubectl apply -f ${CONFDIR}/agent-configmap.yaml > /dev/null
-	kubectl apply -f ${CONFDIR}/agent-daemonset.yaml > /dev/null
+	kubectl apply -f ${DIR}/agent-account.yaml > /dev/null
+	kubectl apply -f ${DIR}/agent-cluster-role.yaml > /dev/null
+	kubectl apply -f ${DIR}/agent-configmap.yaml > /dev/null
+	kubectl apply -f ${DIR}/agent-daemonset.yaml > /dev/null
 	echo "${green}ok.${norm}"
 }
 
