@@ -11,7 +11,7 @@ To illustrate it, we'll create a simple scenario with three services. One servic
 
 [diagram]: images/SPIRE_Envoy_diagram.png "SPIRE Envoy integration diagram"
 
-As states in the diagram, the front-end services connect to the back-end service via a TLS connection established by the Envoy instances that perform X.509 SVID authentication on workload's behalf.
+As states in the diagram, the front-end services connect to the back-end service via a mTLS connection established by the Envoy instances that perform X.509 SVID authentication on workload's behalf.
 
 
 In this tutorial you will learn how to:
@@ -26,7 +26,7 @@ Before proceeding, review the following:
 
 * You'll need access to the Kubernetes environment that you configured when going through [Kubernetes Quickstart](/spire/try/getting-started-k8s/). The Kubernetes environment must be able to expose an Ingress to the public internet. _Note: This is generally not true for local Kubernetes environments such as Minikube._
 
-* Required YAML files for this tutorial can be found in the `k8s/envoy` directory from the repository https://github.com/spiffe/spire-tutorials cloned as part of the Kubernetes Quickstart guide.
+* Required YAML files for this tutorial can be found in the `k8s/envoy-x509` directory from the repository https://github.com/spiffe/spire-tutorials cloned as part of the Kubernetes Quickstart guide.
 
 
 If that environment is not available any more, you can use the following commands to recreate it and use it as start point for this tutorial

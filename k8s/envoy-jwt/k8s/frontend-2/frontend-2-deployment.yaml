@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-2
+  labels:
+    app: frontend-2
+spec:
+  selector:
+    matchLabels:
+      app: frontend-2
+  template:
+    metadata:
+      labels:
+        app: frontend-2
+    spec:
+      hostPID: true
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: envoy
+        image: envoyproxy/envoy-alpine:v1.14.1
+        imagePullPolicy: Always
+        args: ["-l", "debug", "--local-address-ip-version", "v4", "-c", "/run/envoy/envoy.yaml", "--base-id", "2"]
+        volumeMounts:
+        - name: envoy-config
+          mountPath: "/run/envoy"
+          readOnly: true
+        - name: spire-agent-socket
+          mountPath: /run/spire/sockets
+          readOnly: true
+      - name: auth-helper
+        image: us.gcr.io/scytale-registry/envoy-jwt-auth-helper@sha256:e55ce5fd42f13c5475b285a848c5f83bc4a335a93d7f934d3ac884920045fc96
+        imagePullPolicy: IfNotPresent
+        args:  ["-config", "/run/envoy-jwt-auth-helper/config/envoy-jwt-auth-helper.conf"]
+        ports:
+        - containerPort: 9012
+        volumeMounts:
+        - name: envoy-jwt-auth-helper-config
+          mountPath: "/run/envoy-jwt-auth-helper/config"
+          readOnly: true
+        - name: spire-agent-socket
+          mountPath: /run/spire/sockets
+          readOnly: true
+      - name: frontend-2
+        imagePullPolicy: IfNotPresent
+        image: us.gcr.io/scytale-registry/symbank-webapp:1.1.0
+        command: ["/opt/symbank-webapp/symbank-webapp", "-config", "/run/symbank-webapp/config/symbank-webapp-2.conf"]
+        ports:
+        - containerPort: 3002
+        volumeMounts:
+        - name: symbank-webapp-2-config
+          mountPath: /run/symbank-webapp/config
+      volumes:
+      - name: envoy-config
+        configMap:
+          name: frontend-2-envoy
+      - name: spire-agent-socket
+        hostPath:
+          path: /run/spire/sockets
+          type: DirectoryOrCreate
+      - name: envoy-jwt-auth-helper-config
+        configMap:
+            name: fe-2-envoy-jwt-auth-helper-config
+      - name: symbank-webapp-2-config
+        configMap:
+          name: symbank-webapp-2-config
