@@ -10,6 +10,7 @@ The tutorials in this repo describe how to install SPIRE and integrate it with s
 | [Integrating with Envoy using X.509 certs](k8s/envoy-x509) | Kubernetes |
 | [Integrating with Envoy using JWT](k8s/envoy-jwt) | Kubernetes |
 | [Using SPIFFE X.509 IDs with Envoy and Open Policy Agent Authorization](k8s/envoy-opa) | Kubernetes |
+| [Using SPIFFE JWT IDs with Envoy and Open Policy Agent Authorization](k8s/envoy-jwt-opa) | Kubernetes |
 | [Nested SPIRE](nested-spire) | Docker Compose |
 | [Federation](federation) | Docker Compose |
 | [Configure SPIRE to Emit Telemetry](metrics) | Docker Compose |

@@ -1,3 +1,9 @@
+# macOS
+.DS_Store
+
+# Visual Code
+.vscode
+
 # Ignore certs and keys generated as part of the tutorial
 *.pem
 *.crt.pem

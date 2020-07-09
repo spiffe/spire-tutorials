@@ -19,11 +19,11 @@ trap clean-env EXIT
 echo "${bb}Preparing environment...${nm}"
 clean-env
 
-# Creates Envoy JWT scenario
+# Creates Envoy JWT OPA scenario
 bash "${DIR}"/scripts/set-env.sh
 
 echo "${bb}Running test...${nm}"
-# If balance is part of the response, then the request was accepted by the backend and token was valid.
+# If balance is part of the response, then the request has a valid token and it was authorized by the OPA rules.
 BALANCE_LINE="Your current balance is 10.95"
 if curl -s $(minikube service frontend --url) | grep -qe "$BALANCE_LINE"; then
    echo "${green}Success${nn}"
