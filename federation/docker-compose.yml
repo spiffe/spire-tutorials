@@ -1,0 +1,37 @@
+version: '3'
+services:
+
+  spire-server-stocks:
+    build: ./docker/spire-server-stocksmarket.org
+    hostname: spire-server-stocks
+    tty: true
+    privileged: true
+    volumes: 
+      - ./docker/spire-server-stocksmarket.org/conf:/opt/spire/conf/server
+
+  spire-server-broker:
+    build: ./docker/spire-server-broker.org
+    hostname: spire-server-broker
+    tty: true
+    privileged: true
+    volumes: 
+      - ./docker/spire-server-broker.org/conf:/opt/spire/conf/server
+
+  stock-quotes-service:
+    build: ./docker/stock-quotes-service
+    hostname: stock-quotes-service
+    tty: true
+    privileged: true
+    links:
+      - spire-server-stocks
+      
+  broker-webapp:
+    build: ./docker/broker-webapp
+    hostname: broker-webapp
+    tty: true
+    privileged: true
+    links:
+      - spire-server-broker
+      - stock-quotes-service
+    ports:
+      - 8080:8080
