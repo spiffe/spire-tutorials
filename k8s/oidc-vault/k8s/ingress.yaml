@@ -18,3 +18,7 @@ spec:
             backend:
               serviceName: spire-oidc
               servicePort: 443
+          - path: /keys
+            backend:
+              serviceName: spire-oidc
+              servicePort: 443
