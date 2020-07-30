@@ -77,7 +77,9 @@ $ kubectl apply \
 
 As part of this tutorial, you will need to register a public DNS record that will resolve to the public IP address of your Kubernetes cluster. This will require you or an administrator to have registered a domain name (e.g. `yutani.com`) with a domain name registrar, have configured its name server to point to a DNS service, and have the ability to create a new A record for the subdomain (e.g. `oidc-discovery.yutani.com`) in that DNS service. If you don't have a registered domain name or access to a DNS service, services like Google Domains can help you set one up for a fee.
 
-In this tutorial, the subdomain that you create will provide an endpoint to the discovery document specified by the OIDC protocol. The Vault server will query this endpoint as part of the authentication handshake between the Vault server and SPIRE.
+In this tutorial, the subdomain that you create will provide an endpoint to the Discovery Document specified by the OIDC protocol. The Vault server will query this endpoint as part of the authentication handshake between the Vault server and SPIRE.
+
+Also note that the integration with Vault is also possible using [JWKS](https://tools.ietf.org/html/rfc7517). This method does not require a DNS entry but does require that Vault be deployed inside the Kubernetes deployment, which is not the case in the set of instructions on this tutorial. The JWKS method is not fully described here, but you can find more information on the [Vault documentation site](https://www.vaultproject.io/api-docs/auth/jwt#jwks_url).
 
 ## Retrieve the IP Address of the SPIRE OIDC Discovery Provider
 
