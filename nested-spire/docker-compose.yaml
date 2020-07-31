@@ -14,7 +14,7 @@ services:
     depends_on: ["root-server"]
     hostname: root-agent
     volumes:
-      # Share root-agent socket to be acceded by nested servers
+      # Share root-agent socket to be accessed by nested servers
       - ./sharedRootSocket:/opt/spire/sockets
       - ./root/agent:/opt/spire/conf/agent
       - /var/run/:/var/run/

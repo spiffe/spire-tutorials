@@ -47,7 +47,7 @@ check-entry-is-propagated() {
 }
 
 
-# create a shared folder for root agent socket to be acceded by nestedA and nestedB servers
+# create a shared folder for root agent socket to be accessed by nestedA and nestedB servers
 mkdir -p sharedRootSocket
 
 
