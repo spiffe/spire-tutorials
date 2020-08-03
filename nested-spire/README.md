@@ -76,9 +76,9 @@ We define all the services for the tutorial in the [docker-compose.yaml](docker-
 
 ## Configuring NestedA SPIRE Deployment
 
-The same set of configurations are required for the NestedB SPIRE deployment but those changes are not described in the text to avoid needless repetition.
+The same set of configurations are required for the `nestedB` SPIRE deployment but those changes are not described in the text to avoid needless repetition.
 
-SPIRE Server can be configured using different types of plugins. For Nested SPIRE deployments we use the UpstreamAuthority type that allows SPIRE server to integrate with existing PKI systems. For the guide we use the `spire` UpstreamAuthority plugin which uses an upstream SPIRE server in the same trust domain to obtain intermediate signing certificates for SPIRE server.
+SPIRE Agent and Server can be extended with a variety of [plugins](https://spiffe.io/spire/docs/extending/). The [UpstreamAuthority plugin](https://github.com/spiffe/spire/blob/master/doc/spire_server.md#built-in-plugins) type allows SPIRE Server to integrate with existing PKI systems. UpstreamAuthority plugins can sign certificates using CAs loaded from disk, third-party tools from AWS and Vault, and so on. Nested SPIRE deployments require the use of the [spire UpstreamAuthority plugin](https://github.com/spiffe/spire/blob/master/doc/plugin_server_upstreamauthority_spire.md) which uses an upstream SPIRE Server in the same trust domain to obtain intermediate signing certificates for SPIRE Server.
 
 The configuration file for the [nestedA-server](./nestedA/server/server.conf) includes the `spire` UpstreamAuthority plugin definition with the `root-server` as its upstream SPIRE Server.
 
