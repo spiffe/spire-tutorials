@@ -26,8 +26,8 @@ Required files for this tutorial can be found in the `nested-spire` directory in
 
 Before proceeding, review the following system requirements:
 - A 64-bit Linux or macOS environment
-- Docker and Docker Compose installed
-- Go 1.14.4 or higher installed
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed (Docker Compose is included in macOS and Windows Docker Desktop)
+- [Go](https://golang.org/dl/) 1.14.4 or higher installed
 
 
 # Part 1: Run Services
