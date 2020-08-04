@@ -37,10 +37,15 @@ This tutorial's `nested-spire` main directory contains three subdirectories, one
 ## Create a Shared Directory
 
 The first thing to do is to create a local directory that will be volume mounted on the services to share the Workload API between the root SPIRE Agent and its nested SPIRE Servers.
+
 Change to the directory `nested-spire` that contains the required files to complete the tutorial:
+
 ```console
-cd your_path/nested-spire
+    cd your_path/nested-spire
+```
+
 Create the `sharedRootSocket` shared directory:
+
 ```console
    mkdir sharedRootSocket
 ```
@@ -129,7 +134,8 @@ The other point to highlight is the `-downstream` option. This option, when set,
 
 ## Run the Scenario
 
-Use the `set-env.sh` script to run all the services that make up the scenario. The script starts the `root`, `nestedA`, and `nestedB` services with the configuration options described earlier. 
+Use the `set-env.sh` script to run all the services that make up the scenario. The script starts the `root`, `nestedA`, and `nestedB` services with the configuration options described earlier.
+
 Ensure that the current working directory is `.../spire-tutorials/nested-spire` and run:
 
 ```console
@@ -170,6 +176,7 @@ To test the scenario we create two workload registration entries, one entry for 
 ```
 
 The examples use the `$(fingerprint nestedA/agent/agent.crt.pem)` form again to show that the `-parentID` flag specifies the SPIFFE ID of the nested SPIRE Agent. The TTL flag value of zero indicates that the default value of 3600 seconds will be used. Finally, in both cases the unix selector assigns the SPIFFE ID to any process with a uid of 1001.
+
 Use the following Bash script to create the registration entries using the options just described:
 
 ```console
@@ -182,24 +189,30 @@ Once both workload registration entries are propagated, let's test that SVIDs cr
 
 The test consists of getting a JWT-SVID from the `nestedA-agent` SPIRE Agent and validating it using the `nestedB-agent`. In both cases, Docker Compose runs the processes using the uid 1001 to match the workload registration entries created in the previous section.
 
+Type this command to fetch the JWT-SVID on the `nestedA` SPIRE Agent and extract the token from the JWT-SVID:
+
 ```console
-    # Fetch JWT-SVID and extract token
     token=$(docker-compose exec -u 1001 -T nestedA-agent \
       /opt/spire/bin/spire-agent api fetch jwt -audience nested-test -socketPath /opt/spire/sockets/workload_api.sock | sed -n '2p')
+```
 
-    # Validate token
+Run the following command to validate the token from `nestedA` on the `nestedB` SPIRE Agent:
+
+```console
     docker-compose exec -u 1001 -T nestedB-agent \
         /opt/spire/bin/spire-agent api validate jwt -audience nested-test  -svid "${token}" \
           -socketPath /opt/spire/sockets/workload_api.sock
 ```
 
-The result indicates that the JWT-SVID is valid and shows the SPIFFE ID associated to the JWT-SVID which belongs to the workload registered on the `nestedA-agent`. 
+The `nestedB` SPIRE Agent outputs the following:
 
 ```console
     SVID is valid.
     SPIFFE ID : spiffe://example.org/nestedA/workload
     Claims    : {"aud":["nested-test"],"exp":1595814190,"iat":1595813890,"sub":"spiffe://example.org/nestedA/workload"}
 ```
+
+The output indicates that the JWT-SVID is valid. Also, although the SPIFFE ID is registered on `nestedA` rather than `nestedB`, the SPIFFE ID is still valid on the `nestedB` SPIRE Agent because the SPIRE Agents are in the same trust domain in the nested SPIRE topology.
 
 In SPIRE this is accomplished by propagating every JWT-SVID public signing key to the whole topology. In the case of X509-SVID, this is easily achieved because of the chaining semantics that X.509 has.
 
