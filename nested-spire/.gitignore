@@ -1,0 +1,5 @@
+# Ignore certs and keys generated as part of the tutorial
+*.pem
+*.crt.pem
+*.key.pem
+*.crt

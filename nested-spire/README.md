@@ -38,10 +38,10 @@ This tutorial's `nested-spire` main directory contains three subdirectories, one
 
 The first thing to do is to create a local directory that will be volume mounted on the services to share the Workload API between the root SPIRE Agent and its nested SPIRE Servers.
 
-Change to the directory `nested-spire` that contains the required files to complete the tutorial:
+Ensure that the current working directory is `.../spire-tutorials` and change to the directory `nested-spire` that contains the required files to complete the tutorial:
 
 ```console
-    cd your_path/nested-spire
+    cd nested-spire
 ```
 
 Create the `sharedRootSocket` shared directory:
@@ -117,7 +117,7 @@ The Docker Compose definition for the `nestedA-server` service in the [docker-co
 
 ## Create Downstream Registration Entry
 
-The `nestedA-server` must be registered on the `root-server` to get SVIDs. We achieve this by creating a registration entry in the root SPIRE Server for the `nestedA-server`.
+The `nestedA-server` must be registered on the `root-server` to obtain its identity which will be used to mint SVIDs. We achieve this by creating a registration entry in the root SPIRE Server for the `nestedA-server`.
 
 ```console
    docker-compose exec -T root-server \
@@ -175,7 +175,7 @@ To test the scenario we create two workload registration entries, one entry for 
        -ttl 0
 ```
 
-The examples use the `$(fingerprint nestedA/agent/agent.crt.pem)` form again to show that the `-parentID` flag specifies the SPIFFE ID of the nested SPIRE Agent. The TTL flag value of zero indicates that the default value of 3600 seconds will be used. Finally, in both cases the unix selector assigns the SPIFFE ID to any process with a uid of 1001.
+The examples use the `fingerprint path/to/nested-agent-cert` form again to show that the `-parentID` flag specifies the SPIFFE ID of the nested SPIRE Agent. The TTL flag value of zero indicates that the default value of 3600 seconds will be used. Finally, in both cases the unix selector assigns the SPIFFE ID to any process with a uid of 1001.
 
 Use the following Bash script to create the registration entries using the options just described:
 
@@ -219,8 +219,8 @@ In SPIRE this is accomplished by propagating every JWT-SVID public signing key t
 
 # Cleanup
 
-When you are finished running this tutorial, you can use the following command to stop all the containers:
+When you are finished running this tutorial, you can use the following Bash script to stop all the containers:
 
 ```console
-   docker-compose down
+    bash scripts/clean-env.sh
 ```

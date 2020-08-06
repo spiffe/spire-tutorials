@@ -22,7 +22,7 @@ fail() {
 
 clean-env() {
     log "Cleaning up..."
-    docker-compose down > /dev/null
+    bash "${DIR}"/scripts/clean-env.sh
 }
 
 trap clean-env EXIT

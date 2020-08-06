@@ -23,7 +23,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	notAfter := time.Now().Add(time.Minute * 10)
+	notAfter := time.Now().Add(time.Hour * 2)
 
 	caKey := generateKey()
 	caCert := createRootCertificate(caKey, &x509.Certificate{
