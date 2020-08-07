@@ -1,5 +1,5 @@
 
-# Overview
+# Configure Envoy to Perform X.509 SVID Authentication
 
 This tutorial builds on the [Kubernetes Quickstart Tutorial](../quickstart/) to demonstrate how to configure SPIRE to provide service identity dynamically in the form of X.509 certificates that will be consumed by Envoy secret discovery service (SDS). The changes required to implement X.509 SVID authentication are shown here as a delta to that tutorial, so you should run, or at least read through, the Kubernetes Quickstart Tutorial first.
 
@@ -9,7 +9,7 @@ To illustrate X.509 authentication, we create a simple scenario with three servi
 
 [diagram]: images/SPIRE_Envoy_diagram.png "SPIRE Envoy integration diagram"
 
-As shown in the diagram, the frontend services connect to the backend service via an mTLS connection established by the Envoy instances that perform X.509 SVID authentication on workload's behalf.
+As shown in the diagram, the frontend services connect to the backend service via an mTLS connection established by the Envoy instances that perform X.509 SVID authentication on each workload's behalf.
 
 In this tutorial you will learn how to:
 
@@ -37,7 +37,7 @@ The script will create all the resources needed for the SPIRE Server and SPIRE A
 
 # Part 1: Update SPIRE Agent to Support SDS
 
-As we want Envoy to consume certificates via SDS we need to configure SPIRE to provide them by enabling the SDS support on the SPIRE Agent. The `spire-agent-configmap.yaml` file in the `k8s/envoy-x509` directory includes a new line to enable SDS support
+As we want Envoy to consume certificates via SDS, we need to configure SPIRE to provide them by enabling SDS support on the SPIRE Agent. The `spire-agent-configmap.yaml` file in the `k8s/envoy-x509` directory includes the following line to enable SDS support:
 
  `enable_sds: true`
 
@@ -53,7 +53,7 @@ Delete the SPIRE Agent pod so it is restarted using the new configuration provid
    $ kubectl -n spire delete pod $(kubectl -n spire get pods --selector=app=spire-agent --output=jsonpath="{..metadata.name}")
 ```
 
-Check `spire-agent` status and when the pod displayed as _Running_, continue to the next step.
+Use the following command to check the `spire-agent` status. When the pod displayed as _Running_, continue to the next step.
 
 ```console
    $ kubectl -n spire get pod --selector=app=spire-agent
@@ -62,7 +62,8 @@ Check `spire-agent` status and when the pod displayed as _Running_, continue to 
 
 # Part 2: Run Workloads
 
-Now we deploy the workloads we'll use in this tutorial. It consists of three workloads, as mentioned before, two instances of the `Symbank` demo application will act as frontend services and the other, an instance of _nginx_ serving static files, will be the backend service.
+Now let's deploy the workloads we'll use in this tutorial. It consists of three workloads: as mentioned before, two instances of the `Symbank` demo application will act as frontend services and the other, an instance of _nginx_ serving static files, will be the backend service.
+
 To make a distinction between the two instances of the `Symbank` application, let's call one `frontend` and the other `frontend-2`. The former is configured to present data related to the user _Jacob Marley_ and the second will show account details for the user _Alex Fergus_.
 
 ## Deploy all Workloads
@@ -88,7 +89,7 @@ Ensure that the current working directory is `.../spire-tutorials/k8s/envoy-x509
    deployment.apps/frontend created
 ```
 
-Several resources have been created.
+The `kubectl apply` command creates the following resources:
    * A Deployment for each of the workloads. It contains one container for our service plus the Envoy sidecar
    * A Service for each workload. It is used to communicate between them
    * Several Configmaps:
@@ -96,7 +97,7 @@ Several resources have been created.
       * _*-envoy_ contains the Envoy configuration for each workload
       * _symbank-webapp-*_ contains the configuration supplied to each instance of the frontend services
 
-Let's focus on the Envoy configuration for the `backend` service. This is where the details are set in order to let Envoy SDS to consume X.509 certificates provided by SPIRE. The configuration is located at `k8s/backend/config/envoy.yaml`.
+The next two sections focus on the settings needed to configure Envoy. 
 
 ### SPIRE Agent Cluster
 
@@ -145,18 +146,18 @@ Furthermore SPIRE provides a validation context per trust domain that Envoy uses
                      cluster_name: spire_agent
 ```
 
-Similar configurations are set on the both frontend services to establish an mTLS communication. Check the configuration of the cluster named `backend` on `k8s/frontend/config/envoy.yaml` and `k8s/frontend-2/config/envoy.yaml`
+Similar configurations are set on both frontend services to establish an mTLS communication. Check the configuration of the cluster named `backend` in `k8s/frontend/config/envoy.yaml` and `k8s/frontend-2/config/envoy.yaml`.
 
 ## Create Registration Entries
 
-In order to get X.509 certificates issued by SPIRE, the services must be registered. We achieve this by creating registration entries at the SPIRE Server for each of our workloads. Let's use the following Bash script:
+In order to get X.509 certificates issued by SPIRE, the services must be registered. We achieve this by creating registration entries on the SPIRE Server for each of our workloads. Let's use the following Bash script:
 
 ```console
    $ bash create-registration-entries.sh
 ```
 
 Once the script is run, the list of created registration entries will be shown.
-Note that there are other registration entries created at the [Kubernetes Quickstart Tutorial](../quickstart/). The important ones here are the three new entries belonging to each of our workloads:
+Note that there are other registration entries created by the [Kubernetes Quickstart Tutorial](../quickstart/). The important ones here are the three new entries belonging to each of our workloads:
 
 ```console
    ...
@@ -196,9 +197,9 @@ Note that the selectors for our workloads points to the Envoy container: `k8s:co
 
 Now that services are deployed and also registered in SPIRE, let's test the authorization that we've configured.
 
-## Testing Valid Requests
+## Test for Successful Authentication with Valid X.509 SVIDs
 
-Now we can check that both frontend services, (`frontend` and `frontend-2`) can talk to the `backend` service by getting the correct IP address and port for each one.
+The first set of testing will demonstrate how valid X.509 SVIDs allow for the display of associated data. To do this, we show that both frontend services, (`frontend` and `frontend-2`) can talk to the `backend` service by getting the correct IP address and port for each one. To run these tests, we need to find the IP addresses and ports that make up the URLs to use for accessing the data.
 
    ```console
    $ kubectl get services
@@ -210,7 +211,7 @@ Now we can check that both frontend services, (`frontend` and `frontend-2`) can 
    kubernetes      ClusterIP      10.8.0.1      <none>           443/TCP          59m
    ```
 
-The `frontend` service we'll be available at the `EXTERNAL-IP` value and port `3000`, which was configured for our container. In the sample output shown above, the URL to navigate is `http://35.222.164.221:3000`. Open your browser and navigate to the IP address shown for `frontend` in your environment, adding the port `:3000`. Once the page is loaded, you'll see the account details for user _Jacob Marley_. 
+The `frontend` service will be available at the `EXTERNAL-IP` value and port `3000`, which was configured for our container. In the sample output shown above, the URL to navigate is `http://35.222.164.221:3000`. Open your browser and navigate to the IP address shown for `frontend` in your environment, adding the port `:3000`. Once the page is loaded, you'll see the account details for user _Jacob Marley_. 
 
 ![Frontend][frontend-view]
 
@@ -222,9 +223,9 @@ Following the same steps, when you connect to the URL for the `frontend-2` servi
 
 [frontend-2-view]: images/frontend-2_view.png "Frontend-2 view"
 
-## Update the TLS Configuration so only one Frontend Can Access the Backend
+## Update the TLS Configuration So Only One Frontend Can Access the Backend
 
-Envoy configuration for the `backend` service uses the TLS configuration to filter incoming connections by validating the `subject alt names` of the certificate presented on the TLS connection. For SVIDs, the SAN field of the certificate is set with the SPIFFE ID associated to the service so by listing the SPIFFE IDs we indicates to Envoy which services can establish a connection.
+The Envoy configuration for the `backend` service uses the TLS configuration to filter incoming connections by validating the Subject Alternative Name (SAN) of the certificate presented on the TLS connection. For SVIDs, the SAN field of the certificate is set with the SPIFFE ID associated with the service. So by specifying the SPIFFE IDs in the `match_subject_alt_names` filter we indicate to Envoy which services can establish a connection.
 Let's now update the Envoy configuration for the `backend` service to allow requests from the `frontend` service only. This is achieved by removing the SPIFFE ID of the `frontend-2` service from the `combined_validation_context` section at the [Envoy configuration](k8s/backend/config/envoy.yaml#L49). The updated configuration looks like this:
 
 ```console
@@ -265,7 +266,7 @@ On the other hand, you can check that the `frontend` service is still able to ge
 
 When you are finished running this tutorial, you can use the following script to remove all the resources used for configuring Envoy to perform X.509 authentication on workload's behalf. This command will remove:
    * - All resources created for the SPIRE - Envoy X.509 integration tutorial.
-   * - All deployments and configurations for the SPIRE agent, SPIRE server, and namespace.
+   * - All deployments and configurations for the SPIRE Agent, SPIRE Server, and namespace.
 
 ```console
    $ bash scripts/clean-env.sh
@@ -299,4 +300,4 @@ The following snippet can be added to the Envoy configuration for the `backend` 
                    exact: "spiffe://example.org/ns/default/sa/default/frontend"
 ```
 
-The example illustrate how to perform more granular access control based on request parameters when there is a TLS connection already established by Envoy instances who obtained their  identities from SPIRE.
+The example illustrates how to perform more granular access control based on request parameters when there is a TLS connection already established by Envoy instances which have obtained their identities from SPIRE.
