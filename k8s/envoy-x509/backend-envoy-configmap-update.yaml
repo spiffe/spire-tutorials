@@ -41,21 +41,6 @@ data:
                     route:
                       cluster: local_service
               http_filters:
-              - name: envoy.filters.http.rbac
-                config:
-                  rules: 
-                    action: ALLOW
-                    policies:
-                      "general-rules":
-                        permissions:
-                          - and_rules:
-                              rules:
-                                - header: { name: ":method", exact_match: "GET" }
-                                - destination_port: 9001
-                        principals:
-                        - authenticated:
-                            principal_name:
-                              exact: "spiffe://example.org/ns/default/sa/default/frontend"                          
               - name: envoy.router
           tls_context:
             common_tls_context:
@@ -70,9 +55,8 @@ data:
               combined_validation_context:
                 # validate the SPIFFE ID of incoming clients (optionally)
                 default_validation_context:
-                  verify_subject_alt_name:
-                    - "spiffe://example.org/ns/default/sa/default/frontend"
-                    - "spiffe://example.org/ns/default/sa/default/frontend-2"
+                  match_subject_alt_names:
+                    - exact: "spiffe://example.org/ns/default/sa/default/frontend"
                 # obtain the trust bundle from SDS
                 validation_context_sds_secret_config:
                   name: "spiffe://example.org"

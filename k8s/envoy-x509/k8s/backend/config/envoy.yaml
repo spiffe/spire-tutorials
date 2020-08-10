@@ -35,21 +35,6 @@ static_resources:
                 route:
                   cluster: local_service
           http_filters:
-          - name: envoy.filters.http.rbac
-            config:
-              rules: 
-                action: ALLOW
-                policies:
-                  "general-rules":
-                    permissions:
-                      - any: true
-                    principals:
-                    - authenticated:
-                        principal_name:
-                          exact: "spiffe://example.org/ns/default/sa/default/frontend"
-                    - authenticated:
-                        principal_name:
-                          exact: "spiffe://example.org/ns/default/sa/default/frontend-2"                              
           - name: envoy.router
       tls_context:
         common_tls_context:
@@ -64,9 +49,9 @@ static_resources:
           combined_validation_context:
             # validate the SPIFFE ID of incoming clients (optionally)
             default_validation_context:
-              verify_subject_alt_name:
-                - "spiffe://example.org/ns/default/sa/default/frontend"
-                - "spiffe://example.org/ns/default/sa/default/frontend-2"
+              match_subject_alt_names:
+                - exact: "spiffe://example.org/ns/default/sa/default/frontend"
+                - exact: "spiffe://example.org/ns/default/sa/default/frontend-2"
             # obtain the trust bundle from SDS
             validation_context_sds_secret_config:
               name: "spiffe://example.org"
