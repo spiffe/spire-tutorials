@@ -266,11 +266,11 @@ On the other hand, you can check that the `frontend` service is still able to ge
 
 # Extend the Scenario with a Role Based Access Control Filter
 
-Envoy provides a Role Based Access Control (RBAC) HTTP filter that checks the request based on a list of policies. A policy consists of a list of permissions and principals where the principal specifies the downstream client identities of the request, for example, the URI SAN of the downstream client certificate. So we can use the SPIFFE ID assigned to the service to create policies that allow for more granular access control.
+Envoy provides a Role Based Access Control (RBAC) HTTP filter that checks the request based on a list of policies. A policy consists of permissions and principals, where the principal specifies the downstream client identities of the request, for example, the URI SAN of the downstream client certificate. So we can use the SPIFFE ID assigned to the service to create policies that allow for more granular access control.
 
-the `Symbank` demo application consumes three different endpoints to get all the information about the bank account. The `/profiles` endpoint is used to get the name and the address of the account's owner. The other two endpoints, `/balances` and `/transactions` retrieves the balance and the list of transactions of the account.
+The `Symbank` demo application consumes three different endpoints to get all the information about the bank account. The `/profiles` endpoint provides the name and the address of the account's owner. The other two endpoints, `/balances` and `/transactions`, provide the balance and transactions for the account.
 
-Then it is possible to create a policy that allows the `frontend` service to obtain only data for profiles and denied the request sent to other endpoints. This is achieved by defining a policy which principal matches the SPIFFE ID of the service and the permissions allows only GET requests to the `/profiles` resource.
+To demonstrate an Envoy RBAC filter, we can create a policy that allows the `frontend` service to obtain only data from the `/profile` endpoint and deny requests sent to other endpoints. This is achieved by defining a policy with a principal that matches the SPIFFE ID of the service and the permissions to allow only GET requests to the `/profiles` resource.
 
 The following snippet can be added to the Envoy configuration for the `backend` service as a new HTTP filter to test the policy.
 
