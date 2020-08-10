@@ -17,6 +17,7 @@ In this tutorial you will learn how to:
 * Configure Envoy SDS to consume X.509 certificates provided by SPIRE
 * Create registration entries on the SPIRE Server for the Envoy instances
 * Test successful X.509 authentication using SPIRE
+* Optionally, configure an Envoy RBAC HTTP filter policy
 
 
 # Prerequisites
@@ -55,7 +56,7 @@ Delete the SPIRE Agent pod so it is restarted using the new configuration provid
 $ kubectl -n spire delete pod $(kubectl -n spire get pods --selector=app=spire-agent --output=jsonpath="{..metadata.name}")
 ```
 
-Use the following command to check the `spire-agent` status. When the pod displayed as _Running_, continue to the next step.
+Use the following command to check the `spire-agent` status. When the pod displayed as _Running_, continue to part 2.
 
 ```console
 $ kubectl -n spire get pod --selector=app=spire-agent
@@ -92,10 +93,10 @@ deployment.apps/frontend created
 ```
 
 The `kubectl apply` command creates the following resources:
-   * A Deployment for each of the workloads. It contains one container for our service plus the Envoy sidecar
-   * A Service for each workload. It is used to communicate between them
+   * A Deployment for each of the workloads. It contains one container for our service plus the Envoy sidecar.
+   * A Service for each workload. It is used to communicate between them.
    * Several Configmaps:
-      * _*-json-data_ are used to provide static files to the _nginx_ instance running as the backend service.
+      * _*-json-data_ are used to provide static files to the nginx instance running as the backend service.
       * _*-envoy_ contains the Envoy configuration for each workload.
       * _symbank-webapp-*_ contains the configuration supplied to each instance of the frontend services.
 
@@ -158,8 +159,7 @@ In order to get X.509 certificates issued by SPIRE, the services must be registe
 $ bash create-registration-entries.sh
 ```
 
-Once the script is run, the list of created registration entries will be shown.
-Note that there are other registration entries created by the [Kubernetes Quickstart Tutorial](../quickstart/). The important ones here are the three new entries belonging to each of our workloads:
+Once the script is run, the list of created registration entries will be shown. The output will show other registration entries created by the [Kubernetes Quickstart Tutorial](../quickstart/). The important ones here are the three new entries belonging to each of our workloads:
 
 ```console
 ...
@@ -192,7 +192,7 @@ Selector      : k8s:sa:default
 ...
 ```
 
-Note that the selectors for our workloads points to the Envoy container: `k8s:container-name:envoy`. This is how we configure Envoy to perform X.509 SVID authentication on a workload's behalf.
+Note that the selectors for our workloads point to the Envoy container: `k8s:container-name:envoy`. This is how we configure Envoy to perform X.509 SVID authentication on a workload's behalf.
 
 
 # Part 3: Test Connections
@@ -228,6 +228,7 @@ Following the same steps, when you connect to the URL for the `frontend-2` servi
 ## Update the TLS Configuration So Only One Frontend Can Access the Backend
 
 The Envoy configuration for the `backend` service uses the TLS configuration to filter incoming connections by validating the Subject Alternative Name (SAN) of the certificate presented on the TLS connection. For SVIDs, the SAN field of the certificate is set with the SPIFFE ID associated with the service. So by specifying the SPIFFE IDs in the `match_subject_alt_names` filter we indicate to Envoy which services can establish a connection.
+
 Let's now update the Envoy configuration for the `backend` service to allow requests from the `frontend` service only. This is achieved by removing the SPIFFE ID of the `frontend-2` service from the `combined_validation_context` section at the [Envoy configuration](k8s/backend/config/envoy.yaml#L49). The updated configuration looks like this:
 
 ```console
@@ -299,8 +300,8 @@ The example illustrates how to perform more granular access control based on req
 # Cleanup
 
 When you are finished running this tutorial, you can use the following script to remove all the resources used for configuring Envoy to perform X.509 authentication on workload's behalf. This command will remove:
-   * - All resources created for the SPIRE - Envoy X.509 integration tutorial.
-   * - All deployments and configurations for the SPIRE Agent, SPIRE Server, and namespace.
+   * All resources created for the SPIRE - Envoy X.509 integration tutorial.
+   * All deployments and configurations for the SPIRE Agent, SPIRE Server, and namespace.
 
 ```console
 $ bash scripts/clean-env.sh
