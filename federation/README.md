@@ -5,7 +5,7 @@ This tutorial shows how to authenticate two SPIFFE-identified workloads that are
 
 In this tutorial you will learn how to:
 
-* Configure each SPIRE Server to expose it's SPIFFE Federation bundle endpoint using SPIFFE authentication.
+* Configure each SPIRE Server to expose it's SPIFFE Federation bundle endpoint using SPIFFE authentication and WebPKI authentication.
 * Configure the SPIRE Servers to retrieve trust bundles from each other (using the federate_with configuration section).
 * Bootstrap federation between two SPIRE Servers using different trust domains.
 * Create registration entries for the workloads so that they can federate with other trust domain.
@@ -77,13 +77,44 @@ server {
 
 At this point, both SPIRE Servers expose their federation endpoints to provide their trust bundles, but none of them knows how to reach each other's federation endpoint. 
 
+## Using WebPKI authentication
+
+We are going to assume that only the broker's SPIRE Server will use WebPKI authentication for its federation endpoint, the stocks market SPIRE Server will still use SPIFFE authentication. Hence, the stocks market SPIRE Server configuration remains the same as seen in the previous section.
+
+Then, to configure the broker's SPIRE Server bundle endpoint, we configure the `federation` section as follows:
+
+```hcl
+server {
+    .
+    .
+    trust_domain = "broker.org"
+    .
+    .
+
+    federation {
+        bundle_endpoint {
+            address = "0.0.0.0"
+            port = 443
+            acme {
+                domain_name = "broker.org"
+                email = "some@email.com"
+                tos_accepted = true
+            }   
+        }
+    }
+}
+```
+This will publish the federation endpoint in any IP address at port 443. We use port 443 because we will be using Let's Encrypt as our ACME provider (this is used by default, if you want to use a different one then you must set the `directory_url` configurable). Note that `tos_accepted` was set to `true`, meaning that we accept the terms of service of our ACME provider, which in turn is needed when using Let's Encrypt.
+
+Worth noting that for this to work you must own the `broker.org` domain and it must point to the SPIRE Server exposing the federation bundle endpoint.
+
 # Configure the SPIRE Servers to retrieve trust bundles from each other
 
 This is the other part of the SPIRE Server configuration needed in order to achieve federation, we need to tell each SPIRE Server where it can find the trust bundles for other trust domains, in other words, we have to configure the `federate_with` section. The configuration of this section has some slight differences when using the different methods of authentication.
 
 ## Using SPIFFE authentication
 
-As we saw previously, the SPIRE Server of the stocks market service provider have its federation endpoint listening on port `8443` at any IP. We will also assume that `spire-server-stocks` is a DNS name that resolves to the stocks market service's SPIRE Server IP. Then, the broker's SPIRE Server must be configured with the following `federate_with` section:
+As we saw previously, the SPIRE Server of the stocks market service provider has its federation endpoint listening on port `8443` at any IP. We will also assume that `spire-server-stocks` is a DNS name that resolves to the stocks market service's SPIRE Server IP. Then, the broker's SPIRE Server must be configured with the following `federate_with` section:
 ```hcl
 server {
     .
@@ -133,6 +164,37 @@ server {
 ```
 That is it, that is all we need about SPIRE Server configuration.
 
+## Using WebPKI authentication
+
+As mentioned, we are assuming that only the broker's SPIRE Server will use WebPKI authentication for its federation endpoint, so the `federates_with` configuration for this server is the same as seen in the previous section. However, the SPIRE Server of the stocks market service provider needs a different configuration:
+
+```hcl
+server {
+    .
+    .
+    trust_domain = "stocksmarket.org"
+    .
+    .
+
+    federation {
+        bundle_endpoint {
+            address = "0.0.0.0"
+            port = 8443
+        }
+        federates_with "broker.org" {
+            bundle_endpoint {
+                address = "broker.org"
+                use_web_pki = true
+            }
+        }
+    }
+}
+```
+The differences are:
+- `port` was removed. This is because by default it is set to `443`, which is the port where the broker's federation bundle endpoint is listening.
+- `address` now is set to the broker's domain `broker.org`.
+- `use_web_pki` was added and set to `true`. This is mandatory when the bundle endpoint to which we want to federate with is using WebPKI authentication.
+
 # Bootstrap federation
 
 We have configured the SPIRE Servers with the address of the federation endpoints, but this is not enough to make federation work. To enable the SPIRE Servers to fetch the trust bundles from each other they need each other's trust bundle first, because they have to authenticate the SPIFFE identity of the federated server that is trying to access the federation endpoint. Once federation is bootstrapped the trust bundle updates are fetched troughth the federation endpoint API using the current trust bundle.
@@ -167,9 +229,11 @@ broker> spire-server experimental bundle set -id spiffe://stocksmarket.org -path
 
 Now both SPIRE Servers can validate SVIDs having SPIFFE IDs with each other's trust domain, thus both can start fetching trust bundle updates from each other's federation endpoints. Also, as of now they can create registration entries for federating.
 
+Something important to consider is that the creation of the `broker.org.bundle` file (and later setting by the stocks market service) is not needed when the broker's SPIRE Server is using WebPKI authentication for its federation bundle endpoint.
+
 # Create registration entries for federation
 
-Now that they are able to create registration entries to federate with each other, let's see how they can actually create them.
+Now that they have each other trust bundle, let's see how they can create registration entries to federate with each other.
 
 To simplify things, we are going to suppose that the webapp and the quotes service are running both on Linux boxes, one owned by the broker and the other owned by the stocks market organization. Since they are using SPIRE, each Linux box also has a SPIRE Agent installed. In addition to this, the webapp is run using the `webapp` user, and the quotes service is run using the `quotes-service` user.
 
@@ -199,7 +263,7 @@ Similarly, once this registration entry is created, when the quotes service asks
 
 That is about it, now all the pieces are together to make federation work and see how the webapp is able to communicate with the quotes service despite having identities with different trust domains.
 
-# Federation Example with SPIRE 0.11.0
+# Federation Example using SPIFFE authentication with SPIRE 0.11.0
 
 This section explains how to try the example implementation of the scenario described previously.
 
