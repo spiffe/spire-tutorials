@@ -33,7 +33,7 @@ If the Kubernetes _SPIRE Envoy-X.509 Tutorial_ environment is not available, you
 From the `k8s/envoy-jwt` directory, run the following command:
 
 ```console
-   $ bash scripts/pre-set-env.sh
+$ bash scripts/pre-set-env.sh
 ```
 
 The script will create all the resources needed for the SPIRE Server and SPIRE Agent to be available in the cluster and then will create all the resources for the SPIRE Envoy X.509 tutorial, which is the base scenario for this SPIRE Envoy JWT Tutorial.
@@ -56,36 +56,36 @@ Internally, Envoy JWT Auth Helper takes advantage of the [go-spiffe](https://git
 
 
 ```console
-   // Create options to configure Sources using the Unix domain socket provided by SPIRE.
-   clientOptions := workloadapi.WithClientOptions(workloadapi.WithAddr(c.SocketPath))
+// Create options to configure Sources using the Unix domain socket provided by SPIRE.
+clientOptions := workloadapi.WithClientOptions(workloadapi.WithAddr(c.SocketPath))
 
-   ...
+...
 
-   // Creates a workloadapi.JWTSource instance to obtain up-to-date JWT bundles from the Workload API.
-   jwtSource, err := workloadapi.NewJWTSource(context.Background(), clientOptions)
-   if err != nil {
-      log.Fatalf("Unable to create JWTSource: %v", err)
-   }
-   defer jwtSource.Close()
+// Creates a workloadapi.JWTSource instance to obtain up-to-date JWT bundles from the Workload API.
+jwtSource, err := workloadapi.NewJWTSource(context.Background(), clientOptions)
+if err != nil {
+   log.Fatalf("Unable to create JWTSource: %v", err)
+}
+defer jwtSource.Close()
 
-   ...
+...
 
-   // Fetches JWT-SVIDs that will be added to a request header.
-   jwtSVID, err := a.config.jwtSource.FetchJWTSVID(ctx, jwtsvid.Params{
-      Audience: a.config.audience,
-   })
-   if err != nil {
-      return forbiddenResponse("PERMISSION_DENIED"), nil
-   }
+// Fetches JWT-SVIDs that will be added to a request header.
+jwtSVID, err := a.config.jwtSource.FetchJWTSVID(ctx, jwtsvid.Params{
+   Audience: a.config.audience,
+})
+if err != nil {
+   return forbiddenResponse("PERMISSION_DENIED"), nil
+}
 
-   ...
+...
 
-   // Parse and validate token against fetched bundle from jwtSource.
-   _, err := jwtsvid.ParseAndValidate(token, a.config.jwtSource, []string{a.config.audience})
+// Parse and validate token against fetched bundle from jwtSource.
+_, err := jwtsvid.ParseAndValidate(token, a.config.jwtSource, []string{a.config.audience})
 
-   if err != nil {
-      return forbiddenResponse("PERMISSION_DENIED"), nil
-   }
+if err != nil {
+   return forbiddenResponse("PERMISSION_DENIED"), nil
+}
 ```
 Note: `workloadapi` and `jwtsvid` are imported from the `go-spiffe` library.
 
@@ -96,27 +96,27 @@ In these sections, YAML file snippets from `k8s/backend/config/envoy.yaml` illus
 This new `auth-helper` service must be added as a sidecar and must be configured to communicate with the SPIRE Agent. This is achieved by mounting a volume to share the Unix domain socket the SPIRE Agent provides. A new second volume provides access to the configmap defined with the service configuration. The following snippet, from the `containers` section, describes these changes:
 
 ```console
-   - name: auth-helper
-     image: envoy-jwt-auth-helper:1.0.0
-     imagePullPolicy: IfNotPresent
-     args:  ["-config", "/run/envoy-jwt-auth-helper/config/envoy-jwt-auth-helper.conf"]
-     ports:
-     - containerPort: 9010
-     volumeMounts:
-     - name: envoy-jwt-auth-helper-config
-       mountPath: "/run/envoy-jwt-auth-helper/config"
-       readOnly: true
-     - name: spire-agent-socket
-       mountPath: /run/spire/sockets
-       readOnly: true
+- name: auth-helper
+  image: envoy-jwt-auth-helper:1.0.0
+  imagePullPolicy: IfNotPresent
+  args:  ["-config", "/run/envoy-jwt-auth-helper/config/envoy-jwt-auth-helper.conf"]
+  ports:
+  - containerPort: 9010
+  volumeMounts:
+  - name: envoy-jwt-auth-helper-config
+    mountPath: "/run/envoy-jwt-auth-helper/config"
+    readOnly: true
+  - name: spire-agent-socket
+    mountPath: /run/spire/sockets
+    readOnly: true
 ```
 
 The `spire-agent-socket` volume is already defined for the deployment, no need to add it again. The configmap `envoy-jwt-auth-helper-config` needs to be added into the _volumes_ section, like this:
 
 ```console
-   - name: envoy-jwt-auth-helper-config
-     configMap:
-        name: be-envoy-jwt-auth-helper-config
+- name: envoy-jwt-auth-helper-config
+  configMap:
+     name: be-envoy-jwt-auth-helper-config
 ```
 
 ## Add an External Authorization Filter
@@ -124,26 +124,26 @@ The `spire-agent-socket` volume is already defined for the deployment, no need t
 Next, this setup requires an External Authorization Filter in the Envoy configuration that connects to the new service. This new HTTP filter calls the `auth-helper` service just added to the deployment:
 
 ```console
-   http_filters:
-   - name: envoy.ext_authz
-   config:
-      grpc_service:
-         envoy_grpc:
-         cluster_name: ext-authz
-         timeout: 0.5s
+http_filters:
+- name: envoy.ext_authz
+  config:
+    grpc_service:
+       envoy_grpc:
+       cluster_name: ext-authz
+       timeout: 0.5s
 ```
 
 Here’s the corresponding cluster configuration for the External Authorization Filter:
 
 ``` console
-  - name: ext-authz
-    connect_timeout: 1s
-    type: strict_dns
-    http2_protocol_options: {}
-    hosts:
-      - socket_address:
-          address: 127.0.0.1
-          port_value: 9010
+- name: ext-authz
+  connect_timeout: 1s
+  type: strict_dns
+  http2_protocol_options: {}
+  hosts:
+    - socket_address:
+        address: 127.0.0.1
+        port_value: 9010
 ```
 
 
@@ -152,21 +152,21 @@ Here’s the corresponding cluster configuration for the External Authorization 
 The services need to be redeployed for the new configuration to take effect. Let's remove the `backend` and `frontend` deployments so we can update them:
 
 ```console
-   $ kubectl delete deployment backend
-   $ kubectl delete deployment frontend
+$ kubectl delete deployment backend
+$ kubectl delete deployment frontend
 ```
 
 Ensure that the current working directory is `.../spire-tutorials/k8s/envoy-jwt` and deploy the new resources using:
 
 ```console
-   $ kubectl apply -k k8s/.
+$ kubectl apply -k k8s/.
 
-   configmap/backend-envoy configured
-   configmap/be-envoy-jwt-auth-helper-config created
-   configmap/fe-envoy-jwt-auth-helper-config created
-   configmap/frontend-envoy configured
-   deployment.apps/backend configured
-   deployment.apps/frontend configured
+configmap/backend-envoy configured
+configmap/be-envoy-jwt-auth-helper-config created
+configmap/fe-envoy-jwt-auth-helper-config created
+configmap/frontend-envoy configured
+deployment.apps/backend configured
+deployment.apps/frontend configured
 ```
 
 ## Create Registration Entries
@@ -174,33 +174,33 @@ Ensure that the current working directory is `.../spire-tutorials/k8s/envoy-jwt`
 In order to fetch or validate JWT SVIDs issued by SPIRE, the `auth-helper` instances need to be authenticated on the SPIRE Server. We can achieve this by creating registration entries for each of them using the following Bash script:
 
 ```console
-   $ bash create-registration-entries.sh
+$ bash create-registration-entries.sh
 ```
 
 Once the script is run, the list of new registration entries will be shown.
 
 ```console
-   ...
-   Creating registration entry for the backend - auth-server...
-   Entry ID      : ecb140ab-50a7-4590-9fe0-d715ada67f29
-   SPIFFE ID     : spiffe://example.org/ns/default/sa/default/backend
-   Parent ID     : spiffe://example.org/ns/spire/sa/spire-agent
-   TTL           : 3600
-   Selector      : k8s:ns:default
-   Selector      : k8s:sa:default
-   Selector      : k8s:pod-label:app:backend
-   Selector      : k8s:container-name:auth-helper
+...
+Creating registration entry for the backend - auth-server...
+Entry ID      : ecb140ab-50a7-4590-9fe0-d715ada67f29
+SPIFFE ID     : spiffe://example.org/ns/default/sa/default/backend
+Parent ID     : spiffe://example.org/ns/spire/sa/spire-agent
+TTL           : 3600
+Selector      : k8s:ns:default
+Selector      : k8s:sa:default
+Selector      : k8s:pod-label:app:backend
+Selector      : k8s:container-name:auth-helper
 
-   Creating registration entry for the frontend - auth-server...
-   Entry ID      : 59a127fa-328c-4115-883e-5ee20b86714f
-   SPIFFE ID     : spiffe://example.org/ns/default/sa/default/frontend
-   Parent ID     : spiffe://example.org/ns/spire/sa/spire-agent
-   TTL           : 3600
-   Selector      : k8s:ns:default
-   Selector      : k8s:sa:default
-   Selector      : k8s:pod-label:app:frontend
-   Selector      : k8s:container-name:auth-helper
-   ...
+Creating registration entry for the frontend - auth-server...
+Entry ID      : 59a127fa-328c-4115-883e-5ee20b86714f
+SPIFFE ID     : spiffe://example.org/ns/default/sa/default/frontend
+Parent ID     : spiffe://example.org/ns/spire/sa/spire-agent
+TTL           : 3600
+Selector      : k8s:ns:default
+Selector      : k8s:sa:default
+Selector      : k8s:pod-label:app:frontend
+Selector      : k8s:container-name:auth-helper
+...
 ```
 
 Note that the selectors for the new services point to the `auth-helper` container: `k8s:container-name:auth-helper`. This is necessary to authenticate the service into SPIRE so it can fetch or validate the JWT SVIDs configured as an authentication header for every request.
@@ -215,15 +215,15 @@ Now that services are deployed and also registered in SPIRE, let's test the auth
 ## Testing for Valid and Invalid JWT-SVIDs
 The first set of testing will demonstrate how valid JWT-SVIDs allow for the display of associated data and invalid JWT-SVIDs prevent the associated data from being displayed. To run these tests, we need to find the IP addresses and ports that make up the URLs to use for accessing the data.
 
-   ```console
-   $ kubectl get services
+```console
+$ kubectl get services
 
-   NAME            TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)          AGE
-   backend-envoy   ClusterIP      None          <none>           9001/TCP         6m53s
-   frontend        LoadBalancer   10.8.14.117   35.222.164.221   3000:32586/TCP   6m52s
-   frontend-2      LoadBalancer   10.8.7.57     35.222.190.182   3002:32056/TCP   6m53s
-   kubernetes      ClusterIP      10.8.0.1      <none>           443/TCP          59m
-   ```
+NAME            TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)          AGE
+backend-envoy   ClusterIP      None          <none>           9001/TCP         6m53s
+frontend        LoadBalancer   10.8.14.117   35.222.164.221   3000:32586/TCP   6m52s
+frontend-2      LoadBalancer   10.8.7.57     35.222.190.182   3002:32056/TCP   6m53s
+kubernetes      ClusterIP      10.8.0.1      <none>           443/TCP          59m
+```
 
 The `frontend` service will be available at the `EXTERNAL-IP` value and port `3000`, which was configured for our container. In the sample output shown above, the URL to navigate is `http://35.222.164.221:3000`. Open your browser and navigate to the IP address shown for `frontend` in your environment, adding the port `:3000`. Once the page is loaded, you'll see the account details for user _Jacob Marley_. 
 
@@ -240,27 +240,27 @@ On the other hand, when you connect to the URL for the `frontend-2` service (e.g
 Let's take a look at the `auth-helper` container logs to see what is happening behind the scenes. The following are the logs for the `auth-helper` instance running next to the `frontend` service. In this case, the `auth-helper` server is configured to run in inject mode. For every request, it will inject the JWT-SVID as a new request header and return it to the Envoy instance that will forward it to the `backend`.
 
 ```console
-   $ kubectl logs -f --selector=app=frontend -c auth-helper
-   Envoy JWT Auth Helper running in jwt_injection mode
-   Starting gRPC Server at 9011
-   JWT-SVID injected. Sending response with 1 new headers
-   JWT-SVID injected. Sending response with 1 new headers
-   JWT-SVID injected. Sending response with 1 new headers
+$ kubectl logs -f --selector=app=frontend -c auth-helper
+Envoy JWT Auth Helper running in jwt_injection mode
+Starting gRPC Server at 9011
+JWT-SVID injected. Sending response with 1 new headers
+JWT-SVID injected. Sending response with 1 new headers
+JWT-SVID injected. Sending response with 1 new headers
 ```
 
 
 On the other side, the `auth-helper` instance running in front of the `backend` service is configured to run in validation mode so it will check the JWT-SVID in the request headers. It extracts the token and validates it. In this case the token is valid for the first three requests which are then sent back to the Envoy instance. These requests are from the `frontend` service.
 
 ```console
-   $ kubectl logs -f --selector=app=backend -c auth-helper
-   Envoy JWT Auth Helper running in jwt_svid_validator mode
-   Starting gRPC Server at 9010
-   Token is valid
-   Token is valid
-   Token is valid
-   Invalid or unsupported authorization header: []
-   Invalid or unsupported authorization header: []
-   Invalid or unsupported authorization header: []
+$ kubectl logs -f --selector=app=backend -c auth-helper
+Envoy JWT Auth Helper running in jwt_svid_validator mode
+Starting gRPC Server at 9010
+Token is valid
+Token is valid
+Token is valid
+Invalid or unsupported authorization header: []
+Invalid or unsupported authorization header: []
+Invalid or unsupported authorization header: []
 
 ```
 
@@ -272,33 +272,33 @@ To enable successful JWT-SVID authentication for `frontend-2`, we'll update the 
 Let's delete the `frontend-2` deployment in preparation for the new configuration.
 
 ```console
-   $ kubectl delete deployment frontend-2
+$ kubectl delete deployment frontend-2
 ```
 
 To update the Envoy configuration and the service deployment for `frontend-2` use the `k8s/frontend-2/kustomization.yaml` file:
 
 ```console
-   $ kubectl apply -k k8s/frontend-2/.
+$ kubectl apply -k k8s/frontend-2/.
 
-   configmap/fe-2-envoy-jwt-auth-helper-config created
-   configmap/frontend-2-envoy configured
-   deployment.apps/frontend-2 created
+configmap/fe-2-envoy-jwt-auth-helper-config created
+configmap/frontend-2-envoy configured
+deployment.apps/frontend-2 created
 ```
 
 Next, authenticate the new `auth-helper` service in SPIRE Server by creating a new registration entry for it:
 
 ```console
-   $ bash k8s/frontend-2/create-registration-entry.sh
+$ bash k8s/frontend-2/create-registration-entry.sh
 
-   Creating registration entry for the frontend-2 - auth-server...
-   Entry ID      : bd0acd51-0d36-42be-8999-fccdcf1f33da
-   SPIFFE ID     : spiffe://example.org/ns/default/sa/default/frontend-2
-   Parent ID     : spiffe://example.org/ns/spire/sa/spire-agent
-   TTL           : 3600
-   Selector      : k8s:ns:default
-   Selector      : k8s:sa:default
-   Selector      : k8s:pod-label:app:frontend-2
-   Selector      : k8s:container-name:auth-helper
+Creating registration entry for the frontend-2 - auth-server...
+Entry ID      : bd0acd51-0d36-42be-8999-fccdcf1f33da
+SPIFFE ID     : spiffe://example.org/ns/default/sa/default/frontend-2
+Parent ID     : spiffe://example.org/ns/spire/sa/spire-agent
+TTL           : 3600
+Selector      : k8s:ns:default
+Selector      : k8s:sa:default
+Selector      : k8s:pod-label:app:frontend-2
+Selector      : k8s:container-name:auth-helper
 ```
 
 Wait some seconds for the deployment to propagate before trying to view the `frontend-2` service in your browser again.
@@ -312,10 +312,10 @@ Once the pod is ready and the registration entry is propagated, refresh the brow
 # Cleanup
 
 When you are finished running this tutorial, you can use the following command to remove all the resources used for configuring Envoy to perform JWT SVID authentication on a workload's behalf. This command will remove:
-   * - All resources created for this SPIRE - Envoy JWT integration tutorial.
-   * - All resources created for the SPIRE - Envoy X.509 integration tutorial.
-   * - All deployments and configurations for the SPIRE agent, SPIRE server, and namespace.
+   * All resources created for this SPIRE - Envoy JWT integration tutorial.
+   * All resources created for the SPIRE - Envoy X.509 integration tutorial.
+   * All deployments and configurations for the SPIRE agent, SPIRE server, and namespace.
 
 ```console
-   $ bash scripts/clean-env.sh
+$ bash scripts/clean-env.sh
 ```
