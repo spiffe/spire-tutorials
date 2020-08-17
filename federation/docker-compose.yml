@@ -1,13 +1,13 @@
 version: '3'
 services:
 
-  spire-server-stocks:
-    build: ./docker/spire-server-stocksmarket.org
-    hostname: spire-server-stocks
+  spire-server-stock:
+    build: ./docker/spire-server-stockmarket.org
+    hostname: spire-server-stock
     tty: true
     privileged: true
     volumes: 
-      - ./docker/spire-server-stocksmarket.org/conf:/opt/spire/conf/server
+      - ./docker/spire-server-stockmarket.org/conf:/opt/spire/conf/server
 
   spire-server-broker:
     build: ./docker/spire-server-broker.org
@@ -23,7 +23,7 @@ services:
     tty: true
     privileged: true
     links:
-      - spire-server-stocks
+      - spire-server-stock
       
   broker-webapp:
     build: ./docker/broker-webapp

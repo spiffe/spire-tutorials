@@ -11,7 +11,7 @@ nn=$(tput sgr0)
 echo "${bb}Bootstrapping trust between SPIRE agents and SPIRE servers...${nn}"
 docker-compose exec -T spire-server-broker bin/spire-server bundle show |
 	docker-compose exec -T broker-webapp tee conf/agent/bootstrap.crt > /dev/null
-docker-compose exec -T spire-server-stocks bin/spire-server bundle show |
+docker-compose exec -T spire-server-stock bin/spire-server bundle show |
 	docker-compose exec -T stock-quotes-service tee conf/agent/bootstrap.crt > /dev/null
 
 # Start up the broker-webapp SPIRE agent.

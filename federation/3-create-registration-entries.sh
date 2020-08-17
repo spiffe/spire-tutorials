@@ -20,11 +20,11 @@ docker-compose exec spire-server-broker bin/spire-server entry create \
 	-parentID spiffe://broker.org/spire/agent/x509pop/${BROKER_WEBAPP_AGENT_FINGERPRINT} \
 	-spiffeID spiffe://broker.org/webapp \
 	-selector unix:user:root \
-	-federatesWith "spiffe://stocksmarket.org"
+	-federatesWith "spiffe://stockmarket.org"
 
 echo "${bb}Creating registration entry for the stock-quotes-service...${nn}"
-docker-compose exec spire-server-stocks bin/spire-server entry create \
-	-parentID spiffe://stocksmarket.org/spire/agent/x509pop/${QUOTES_SERVICE_AGENT_FINGERPRINT} \
-	-spiffeID spiffe://stocksmarket.org/quotes-service \
+docker-compose exec spire-server-stock bin/spire-server entry create \
+	-parentID spiffe://stockmarket.org/spire/agent/x509pop/${QUOTES_SERVICE_AGENT_FINGERPRINT} \
+	-spiffeID spiffe://stockmarket.org/quotes-service \
 	-selector unix:user:root \
 	-federatesWith "spiffe://broker.org"
