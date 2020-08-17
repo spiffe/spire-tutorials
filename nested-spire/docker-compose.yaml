@@ -1,0 +1,66 @@
+version: '3'
+services:
+  # Root
+  root-server:
+    image: gcr.io/spiffe-io/spire-server:0.10.1
+    hostname: root-server
+    volumes:
+      - ./root/server:/opt/spire/conf/server
+    command: ["-config", "/opt/spire/conf/server/server.conf"]
+  root-agent:
+    # Share the host pid namespace so this agent can attest the nested servers
+    pid: "host"
+    image: gcr.io/spiffe-io/spire-agent:0.10.1
+    depends_on: ["root-server"]
+    hostname: root-agent
+    volumes:
+      # Share root-agent socket to be accessed by nested servers
+      - ./sharedRootSocket:/opt/spire/sockets
+      - ./root/agent:/opt/spire/conf/agent
+      - /var/run/:/var/run/
+    command: ["-config", "/opt/spire/conf/agent/agent.conf"]
+  # NestedA
+  nestedA-server:
+    # Share the host pid namespace so this server can be attested by the root agent
+    pid: "host"
+    image: gcr.io/spiffe-io/spire-server:0.10.1
+    hostname: nestedA-server
+    labels:
+      # label to attest server against root-agent
+      - org.example.name=nestedA-server
+    depends_on: ["root-server","root-agent"]
+    volumes:
+      # Add root-agent socket
+      - ./sharedRootSocket:/opt/spire/sockets
+      - ./nestedA/server:/opt/spire/conf/server
+    command: ["-config", "/opt/spire/conf/server/server.conf"]
+  nestedA-agent:
+    image: gcr.io/spiffe-io/spire-agent:0.10.1
+    hostname: nestedA-agent
+    depends_on: ["nestedA-server"]
+    volumes:
+      - ./nestedA/agent:/opt/spire/conf/agent
+      - /var/run/:/var/run/
+    command: ["-config", "/opt/spire/conf/agent/agent.conf"]
+  nestedB-server:
+    # Share the host pid namespace so this server can be attested by the root agent
+    pid: "host"
+    image: gcr.io/spiffe-io/spire-server:0.10.1
+    hostname: nestedB-server
+    depends_on: ["root-server","root-agent"]
+    labels:
+      # Label to attest server against root-agent
+      - org.example.name=nestedB-server
+    volumes:
+      # Add root-agent socket
+      - ./sharedRootSocket:/opt/spire/sockets
+      - ./nestedB/server:/opt/spire/conf/server
+    command: ["-config", "/opt/spire/conf/server/server.conf"]
+  nestedB-agent:
+    image: gcr.io/spiffe-io/spire-agent:0.10.1
+    hostname: nestedB-agent
+    depends_on: ["nestedB-server"]
+    volumes:
+      - ./nestedB/agent:/opt/spire/conf/agent
+      - /var/run/:/var/run/
+    command: ["-config", "/opt/spire/conf/agent/agent.conf"]
