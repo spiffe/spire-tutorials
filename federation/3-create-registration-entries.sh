@@ -17,14 +17,14 @@ QUOTES_SERVICE_AGENT_FINGERPRINT=$(fingerprint docker/stock-quotes-service/conf/
 
 echo "${bb}Creating registration entry for the broker-webapp...${nn}"
 docker-compose exec spire-server-broker bin/spire-server entry create \
-	-parentID spiffe://broker.org/spire/agent/x509pop/${BROKER_WEBAPP_AGENT_FINGERPRINT} \
-	-spiffeID spiffe://broker.org/webapp \
+	-parentID spiffe://broker.example/spire/agent/x509pop/${BROKER_WEBAPP_AGENT_FINGERPRINT} \
+	-spiffeID spiffe://broker.example/webapp \
 	-selector unix:user:root \
-	-federatesWith "spiffe://stockmarket.org"
+	-federatesWith "spiffe://stockmarket.example"
 
 echo "${bb}Creating registration entry for the stock-quotes-service...${nn}"
 docker-compose exec spire-server-stock bin/spire-server entry create \
-	-parentID spiffe://stockmarket.org/spire/agent/x509pop/${QUOTES_SERVICE_AGENT_FINGERPRINT} \
-	-spiffeID spiffe://stockmarket.org/quotes-service \
+	-parentID spiffe://stockmarket.example/spire/agent/x509pop/${QUOTES_SERVICE_AGENT_FINGERPRINT} \
+	-spiffeID spiffe://stockmarket.example/quotes-service \
 	-selector unix:user:root \
-	-federatesWith "spiffe://broker.org"
+	-federatesWith "spiffe://broker.example"

@@ -26,7 +26,7 @@ var (
 	latestQuotes = []*quotes.Quote(nil)
 	latestUpdate = time.Now()
 	// Stock quotes provider SPIFFE ID
-	quotesProviderSpiffeID = spiffeid.Must("stockmarket.org", "quotes-service")
+	quotesProviderSpiffeID = spiffeid.Must("stockmarket.example", "quotes-service")
 	x509Src                *workloadapi.X509Source
 	bundleSrc              *workloadapi.BundleSource
 )

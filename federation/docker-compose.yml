@@ -2,20 +2,20 @@ version: '3'
 services:
 
   spire-server-stock:
-    build: ./docker/spire-server-stockmarket.org
+    build: ./docker/spire-server-stockmarket.example
     hostname: spire-server-stock
     tty: true
     privileged: true
     volumes: 
-      - ./docker/spire-server-stockmarket.org/conf:/opt/spire/conf/server
+      - ./docker/spire-server-stockmarket.example/conf:/opt/spire/conf/server
 
   spire-server-broker:
-    build: ./docker/spire-server-broker.org
+    build: ./docker/spire-server-broker.example
     hostname: spire-server-broker
     tty: true
     privileged: true
     volumes: 
-      - ./docker/spire-server-broker.org/conf:/opt/spire/conf/server
+      - ./docker/spire-server-broker.example/conf:/opt/spire/conf/server
 
   stock-quotes-service:
     build: ./docker/stock-quotes-service

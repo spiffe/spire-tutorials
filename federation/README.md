@@ -30,7 +30,7 @@ Let's say we have a stock broker's webapp that wants to display stock quotes fet
 4. The webapp renders the stock quotes page using the returned quotes and sends it to the browser.
 5. The browser displays the quotes to the user. The webapp includes some JavaScript to refresh the page every 1 second, so every second these steps are executed again.
 
-In addition to the above and for the rest of this tutorial, we are going to assume the following trust domain names for their SPIRE installations: `broker.org` and `stockmarket.org`.  
+In addition to the above and for the rest of this tutorial, we are going to assume the following trust domain names for their SPIRE installations: `broker.example` and `stockmarket.example`.  
 Also, the applications access the WorkloadAPI directly to get SVIDs and trust bundles, meaning there are no proxies in the scenario described.
 
 # Configure SPIFFE Federation Endpoints
@@ -47,7 +47,7 @@ To configure the broker's SPIRE Server bundle endpoint, we use the `federation` 
 server {
     .
     .
-    trust_domain = "broker.org"
+    trust_domain = "broker.example"
     .
     .
 
@@ -66,7 +66,7 @@ On the other side, the stock market service provider's SPIRE Server is configure
 server {
     .
     .
-    trust_domain = "stockmarket.org"
+    trust_domain = "stockmarket.example"
     .
     .
 
@@ -91,7 +91,7 @@ Then, to configure the broker's SPIRE Server bundle endpoint, we configure the `
 server {
     .
     .
-    trust_domain = "broker.org"
+    trust_domain = "broker.example"
     .
     .
 
@@ -100,7 +100,7 @@ server {
             address = "0.0.0.0"
             port = 443
             acme {
-                domain_name = "broker.org"
+                domain_name = "broker.example"
                 email = "some@email.com"
                 tos_accepted = true
             }   
@@ -110,7 +110,7 @@ server {
 ```
 This will publish the federation endpoint in any IP address at port 443. We use port 443 because we will be using Let's Encrypt as our ACME provider (this is used by default, if you want to use a different one then you must set the `directory_url` configurable). Note that `tos_accepted` was set to `true`, meaning that we accept the terms of service of our ACME provider, which in turn is needed when using Let's Encrypt.
 
-For SPIFFE Federation using Web PKI to work, you must own the domain specified for `domain_name` (`broker.org` in our example) and the domain must resolve to the SPIRE Server exposing the federation bundle endpoint.
+For SPIFFE Federation using Web PKI to work, you must own the domain specified for `domain_name` (`broker.example` in our example) and the domain must resolve to the SPIRE Server exposing the federation bundle endpoint.
 
 # Configure SPIRE Servers to Retrieve Trust Bundles From Each Other
 
@@ -123,7 +123,7 @@ As we saw previously, the SPIRE Server of the stock market service provider has 
 server {
     .
     .
-    trust_domain = "broker.org"
+    trust_domain = "broker.example"
     .
     .
 
@@ -132,7 +132,7 @@ server {
             address = "0.0.0.0"
             port = 8443
         }
-        federates_with "stockmarket.org" {
+        federates_with "stockmarket.example" {
             bundle_endpoint {
                 address = "spire-server-stock"
                 port = 8443
@@ -141,14 +141,14 @@ server {
     }
 }
 ```
-Now the broker's SPIRE Server knows where to find a trust bundle that can be used to validate SVIDs containing identities from the `stockmarket.org` trust domain.
+Now the broker's SPIRE Server knows where to find a trust bundle that can be used to validate SVIDs containing identities from the `stockmarket.example` trust domain.
 
 On the other side, the stock market service provider's SPIRE Server must be configured in a similar fashion:
 ```hcl
 server {
     .
     .
-    trust_domain = "stockmarket.org"
+    trust_domain = "stockmarket.example"
     .
     .
 
@@ -157,7 +157,7 @@ server {
             address = "0.0.0.0"
             port = 8443
         }
-        federates_with "broker.org" {
+        federates_with "broker.example" {
             bundle_endpoint {
                 address = "spire-server-broker"
                 port = 8443
@@ -176,7 +176,7 @@ As mentioned, in this alternate scenario we are assuming that only the broker's 
 server {
     .
     .
-    trust_domain = "stockmarket.org"
+    trust_domain = "stockmarket.example"
     .
     .
 
@@ -185,9 +185,9 @@ server {
             address = "0.0.0.0"
             port = 8443
         }
-        federates_with "broker.org" {
+        federates_with "broker.example" {
             bundle_endpoint {
-                address = "broker.org"
+                address = "broker.example"
                 use_web_pki = true
             }
         }
@@ -196,7 +196,7 @@ server {
 ```
 The differences are:
 - `port` was removed. This is because by default it is set to `443`, which is the port where the broker's federation bundle endpoint is listening.
-- `address` now is set to the broker's domain `broker.org`.
+- `address` now is set to the broker's domain `broker.example`.
 - `use_web_pki` was added and set to `true`. This is mandatory when the bundle endpoint to which we want to federate is using Web PKI authentication.
 
 # Bootstrap Federation
@@ -210,30 +210,30 @@ The bootstrapping is done using a couple of SPIRE Server commands: `bundle show`
 Let's say we want to get the broker's SPIRE Server trust bundle. On the node where the SPIRE Server is running we run:
 
 ```
-broker> spire-server bundle show -format spiffe > broker.org.bundle
+broker> spire-server bundle show -format spiffe > broker.example.bundle
 ```
 
-This saves the trust bundle in the `broker.og.bundle` file. Then the broker must give a copy of this file to the stock market service folks, so they can store this trust bundle on their SPIRE Server and associate it with the `broker.org` trust domain. To achieve this, the stock market service folks must run the following on the node where they have SPIRE Server running:
+This saves the trust bundle in the `broker.og.bundle` file. Then the broker must give a copy of this file to the stock market service folks, so they can store this trust bundle on their SPIRE Server and associate it with the `broker.example` trust domain. To achieve this, the stock market service folks must run the following on the node where they have SPIRE Server running:
 
 ```
-stock-market> spire-server bundle set -format spiffe -id spiffe://broker.org -path /some/path/broker.org.bundle
+stock-market> spire-server bundle set -format spiffe -id spiffe://broker.example -path /some/path/broker.example.bundle
 ```
 
-At this point the stock market service's SPIRE Server is able to validate SVIDs having SPIFFE IDs with a `broker.org` trust domain. However, the broker's SPIRE Server is not yet able to validate SVIDs having SPIFFE IDs with a `stockmarket.org` trust domain. To make this possible, the stock market folks must run the following on the node where they have SPIRE Server running:
+At this point the stock market service's SPIRE Server is able to validate SVIDs having SPIFFE IDs with a `broker.example` trust domain. However, the broker's SPIRE Server is not yet able to validate SVIDs having SPIFFE IDs with a `stockmarket.example` trust domain. To make this possible, the stock market folks must run the following on the node where they have SPIRE Server running:
 
 ```
-stock-market> spire-server bundle show -format spiffe > stockmarket.org.bundle
+stock-market> spire-server bundle show -format spiffe > stockmarket.example.bundle
 ```
 
-Then the stock market folks must give a copy of this file to the broker folks, so they can store this trust bundle on their SPIRE Server and associate it with the `stockmarket.org` trust domain. To achieve this, the broker folks must run the following on the node where they have SPIRE Server running:
+Then the stock market folks must give a copy of this file to the broker folks, so they can store this trust bundle on their SPIRE Server and associate it with the `stockmarket.example` trust domain. To achieve this, the broker folks must run the following on the node where they have SPIRE Server running:
 
 ```
-broker> spire-server bundle set -format spiffe -id spiffe://stockmarket.org -path /some/path/stockmarket.org.bundle
+broker> spire-server bundle set -format spiffe -id spiffe://stockmarket.example -path /some/path/stockmarket.example.bundle
 ```
 
 Now both SPIRE Servers can validate SVIDs having SPIFFE IDs with each other's trust domain, thus both can start fetching trust bundle updates from each other's federation endpoints. Also, as of now they can create registration entries for federating.
 
-Note that the creation of the `broker.org.bundle` file (and later importing by the stock market service) is not needed when the broker's SPIRE Server is using WebPKI authentication for its federation bundle endpoint.
+Note that the creation of the `broker.example.bundle` file (and later importing by the stock market service) is not needed when the broker's SPIRE Server is using WebPKI authentication for its federation bundle endpoint.
 
 # Create Registration Entries for Federation
 
@@ -246,24 +246,24 @@ With those assumptions, in the SPIRE Server node of the broker, the broker folks
 ```
 broker> spire-server entry create \
 	-parentID <SPIRE Agent's SPIFFE ID> \
-	-spiffeID spiffe://broker.org/webapp \
+	-spiffeID spiffe://broker.example/webapp \
 	-selector unix:user:webapp \
-	-federatesWith "spiffe://stockmarket.org"
+	-federatesWith "spiffe://stockmarket.example"
 ```
 
-By specifying the `-federatesWith` flag, once this registration entry is created, when the webapp's SPIRE Server asks for an SVID it will get one from the broker's SPIRE Server with the `spiffe://broker.org/webapp` identity, along with the trust bundle associated to the `stockmarket.org` trust domain.
+By specifying the `-federatesWith` flag, once this registration entry is created, when the webapp's SPIRE Server asks for an SVID it will get one from the broker's SPIRE Server with the `spiffe://broker.example/webapp` identity, along with the trust bundle associated to the `stockmarket.example` trust domain.
 
 On the stock market service side, they must create a registration entry as follows:
 
 ```
 stock-market> spire-server entry create \
 	-parentID <SPIRE Agent's SPIFFE ID> \
-	-spiffeID spiffe://stockmarket.org/quotes-service \
+	-spiffeID spiffe://stockmarket.example/quotes-service \
 	-selector unix:user:quotes-service \
-	-federatesWith "spiffe://broker.org"
+	-federatesWith "spiffe://broker.example"
 ```
 
-Similarly, once this registration entry is created, when the quotes service asks for an SVID it will get one having the `spiffe://stockmarket.org/quotes-service` identity, along with the trust bundle associated to the `broker.org` trust domain.
+Similarly, once this registration entry is created, when the quotes service asks for an SVID it will get one having the `spiffe://stockmarket.example/quotes-service` identity, along with the trust bundle associated to the `broker.example` trust domain.
 
 That is about it. Now all the pieces are in place to make federation work and demonstrate how the webapp is able to communicate with the quotes service despite having identities with different trust domains.
 
@@ -341,7 +341,7 @@ server {
     bind_address = "0.0.0.0"
     bind_port = "8081"
     registration_uds_path = "/tmp/spire-registration.sock"
-    trust_domain = "broker.org"
+    trust_domain = "broker.example"
     data_dir = "/opt/spire/data/server"
     log_level = "DEBUG"
     log_file = "/opt/spire/server.log"
@@ -357,7 +357,7 @@ server {
             address = "0.0.0.0"
             port = 8443
         }
-        federates_with "stockmarket.org" {
+        federates_with "stockmarket.example" {
             bundle_endpoint {
                 address = "spire-server-stock"
                 port = 8443
@@ -403,7 +403,7 @@ server {
     bind_address = "0.0.0.0"
     bind_port = "8081"
     registration_uds_path = "/tmp/spire-registration.sock"
-    trust_domain = "stockmarket.org"
+    trust_domain = "stockmarket.example"
     data_dir = "/opt/spire/data/server"
     log_level = "DEBUG"
     log_file = "/opt/spire/server.log"
@@ -419,7 +419,7 @@ server {
             address = "0.0.0.0"
             port = 8443
         }
-        federates_with "broker.org" {
+        federates_with "broker.example" {
             bundle_endpoint {
                 address = "spire-server-broker"
                 port = 8443
@@ -465,12 +465,12 @@ You should see something like this:
 ```
 Found 1 entry
 Entry ID      : 2d799235-ddca-4088-ba6f-bf54d2af918f
-SPIFFE ID     : spiffe://broker.org/webapp
-Parent ID     : spiffe://broker.org/spire/agent/x509pop/4f9238aaa7a93cf96ca3d6060abe27bc51a267e7
+SPIFFE ID     : spiffe://broker.example/webapp
+Parent ID     : spiffe://broker.example/spire/agent/x509pop/4f9238aaa7a93cf96ca3d6060abe27bc51a267e7
 Revision      : 0
 TTL           : 3600
 Selector      : unix:user:root
-FederatesWith : spiffe://stockmarket.org
+FederatesWith : spiffe://stockmarket.example
 ```
 
 To see the stock martket's SPIRE Server registration entries you can run:
@@ -484,12 +484,12 @@ You should see something like this:
 ```
 Found 1 entry
 Entry ID      : e42e8d6b-0a0a-4e38-b544-08510c35cbbe
-SPIFFE ID     : spiffe://stockmarket.org/quotes-service
-Parent ID     : spiffe://stockmarket.org/spire/agent/x509pop/50686366996ece3ca8e528765af685fe81f81435
+SPIFFE ID     : spiffe://stockmarket.example/quotes-service
+Parent ID     : spiffe://stockmarket.example/spire/agent/x509pop/50686366996ece3ca8e528765af685fe81f81435
 Revision      : 0
 TTL           : 3600
 Selector      : unix:user:root
-FederatesWith : spiffe://broker.org
+FederatesWith : spiffe://broker.example
 ```
 
 ## Cleanup

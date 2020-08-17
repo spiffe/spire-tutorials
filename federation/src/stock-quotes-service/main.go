@@ -36,7 +36,7 @@ var (
 		{Symbol: "KKKK"},
 	}
 	quotesMtx      = sync.RWMutex{}
-	brokerSpiffeID = spiffeid.Must("broker.org", "webapp")
+	brokerSpiffeID = spiffeid.Must("broker.example", "webapp")
 )
 
 func main() {
