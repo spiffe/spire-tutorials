@@ -28,3 +28,4 @@ docker-compose exec spire-server-stock bin/spire-server entry create \
 	-spiffeID spiffe://stockmarket.example/quotes-service \
 	-selector unix:user:root \
 	-federatesWith "spiffe://broker.example"
+	
