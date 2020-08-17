@@ -203,32 +203,32 @@ The differences are:
 
 We have configured the SPIRE Servers with the address of the federation endpoints, but this is not enough to make federation work. To enable the SPIRE Servers to fetch the trust bundles from each other they need each other's trust bundle first, because they have to authenticate the SPIFFE identity of the federated server that is trying to access the federation endpoint. Once federation is bootstrapped, the trust bundle updates are fetched trough the federation endpoint API using the current trust bundle.
 
-The bootstrapping is done using a couple of SPIRE Server commands: `experimental bundle show` and `experimental bundle set`.
+The bootstrapping is done using a couple of SPIRE Server commands: `bundle show` and `bundle set`.
 
 ## Get the Bootstrap Trust Bundle
 
 Let's say we want to get the broker's SPIRE Server trust bundle. On the node where the SPIRE Server is running we run:
 
 ```
-broker> spire-server experimental bundle show > broker.org.bundle
+broker> spire-server bundle show -format spiffe > broker.org.bundle
 ```
 
 This saves the trust bundle in the `broker.og.bundle` file. Then the broker must give a copy of this file to the stock market service folks, so they can store this trust bundle on their SPIRE Server and associate it with the `broker.org` trust domain. To achieve this, the stock market service folks must run the following on the node where they have SPIRE Server running:
 
 ```
-stock-market> spire-server experimental bundle set -id spiffe://broker.org -path /some/path/broker.org.bundle
+stock-market> spire-server bundle set -format spiffe -id spiffe://broker.org -path /some/path/broker.org.bundle
 ```
 
 At this point the stock market service's SPIRE Server is able to validate SVIDs having SPIFFE IDs with a `broker.org` trust domain. However, the broker's SPIRE Server is not yet able to validate SVIDs having SPIFFE IDs with a `stockmarket.org` trust domain. To make this possible, the stock market folks must run the following on the node where they have SPIRE Server running:
 
 ```
-stock-market> spire-server experimental bundle show > stockmarket.org.bundle
+stock-market> spire-server bundle show -format spiffe > stockmarket.org.bundle
 ```
 
 Then the stock market folks must give a copy of this file to the broker folks, so they can store this trust bundle on their SPIRE Server and associate it with the `stockmarket.org` trust domain. To achieve this, the broker folks must run the following on the node where they have SPIRE Server running:
 
 ```
-broker> spire-server experimental bundle set -id spiffe://stockmarket.org -path /some/path/stockmarket.org.bundle
+broker> spire-server bundle set -format spiffe -id spiffe://stockmarket.org -path /some/path/stockmarket.org.bundle
 ```
 
 Now both SPIRE Servers can validate SVIDs having SPIFFE IDs with each other's trust domain, thus both can start fetching trust bundle updates from each other's federation endpoints. Also, as of now they can create registration entries for federating.
