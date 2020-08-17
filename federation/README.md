@@ -269,7 +269,9 @@ That is about it. Now all the pieces are in place to make federation work and de
 
 # Federation Example Using SPIFFE Authentication with SPIRE 0.11.0
 
-This section explains how to use Docker Compose to try an example implementation of the scenario described in this tutorial.
+This section explains how to use Docker Compose to try an example implementation of one of the scenarios described in this tutorial.
+
+Although not shown here, you could make the changes shown in the Web PKI authentication sections to try the Web PKI scenario.
 
 ## Requirements
 
