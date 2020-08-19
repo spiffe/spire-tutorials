@@ -117,7 +117,7 @@ After configuring federation endpoints, the next step to enable SPIFFE federatio
 
 ## Configure Trust Bundle Location Using SPIFFE Authentication
 
-As we saw previously, the SPIRE Server of the stock market service provider has its federation endpoint listening on port `8443` at any IP address. We will also assume that `spire-server-stock` is a DNS name that resolves to the stock market service's SPIRE Server IP address. Then, the broker's SPIRE Server must be configured with the following `federates_with` section:
+As we saw previously, the SPIRE Server of the stock market service provider has its federation endpoint listening on port `8443` at any IP address. We will also assume that `spire-server-stock` is a DNS name that resolves to the stock market service's SPIRE Server IP address. (The Docker Compose demo here uses the hostname `spire-server-stock`, but in typical usage you would specify a FQDN.) Then, the broker's SPIRE Server must be configured with the following `federates_with` section:
 ```hcl
 server {
     .
