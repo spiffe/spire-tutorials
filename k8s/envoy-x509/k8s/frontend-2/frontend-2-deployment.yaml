@@ -30,7 +30,7 @@ spec:
           readOnly: true          
       - name: frontend-2
         imagePullPolicy: IfNotPresent
-        image: us.gcr.io/scytale-registry/symbank-webapp:1.1.0
+        image: us.gcr.io/scytale-registry/symbank-webapp@sha256:a1c9b1d14e14bd1a4e75698a4f153680d2a08e6f8d1f2d7110bff63d39228a75
         command: ["/opt/symbank-webapp/symbank-webapp", "-config", "/run/symbank-webapp/config/symbank-webapp-2.conf"]
         ports:
         - containerPort: 3002
