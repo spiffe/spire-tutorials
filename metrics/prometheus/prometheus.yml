@@ -4,10 +4,6 @@ global:
   # scrape_timeout is set to the global default (10s).
 
 scrape_configs:
-  # - job_name: 'prometheus'
-  #   static_configs:
-  #   - targets: ['localhost:9090']
-
   - job_name: 'spire-server'
     metrics_path: '/'
     static_configs:

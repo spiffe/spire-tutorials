@@ -20,11 +20,11 @@ Before proceeding, review the following system requirements:
 
 # Part 1: Run Services
 
-The SPIRE server and Agent can be configured to emit telemetry by using a dedicated `telemetry { ... }` section on their configurations. At the moment of writing this tutorial SPIRE supports Prometheus, Statsd, DogStatsd, M3 and In-Memory as metric collectors. In this tutorial we'll show how to configure Prometheus and Statsd but configuration examples for the other collectors can be found on the [telemetry](https://github.com/spiffe/spire/blob/master/doc/telemetry_config.md) docs of the SPIRE project.
+The SPIRE Server and Agent can be configured to emit telemetry by using a dedicated `telemetry { ... }` section on their configurations. At the moment of writing this tutorial SPIRE supports Prometheus, Statsd, DogStatsd, M3 and In-Memory as metric collectors. In this tutorial we'll show how to configure Prometheus and Statsd but configuration examples for the other collectors can be found on the [telemetry](https://github.com/spiffe/spire/blob/master/doc/telemetry_config.md) docs of the SPIRE project.
 
 ## Configure SPIRE to Emit Telemetry
 
-The `telemetry` section support the configuration of multiple collector and for some collectors is also possible to declare more than one instance.
+The `telemetry` section supports the configuration of multiple collectors and for some collectors is also possible to declare multiple instances.
 The following snippet belongs to the [SPIRE Server configuration](spire/server/server.conf) file. A similar configuration is also present at the [SPIRE Agent configuration](spire/agent/agent.conf) file.
 
 ```console
@@ -42,7 +42,7 @@ telemetry {
 }
 ```
 
-The first collector configured is Prometheus. Its configuration accepts two properties, the Prometheus server host which defaults to `localhost` and the Prometheus server port. This values are used by SPIRE to expose an endpoint which will be used by Prometheus to pull the metrics.
+The first collector configured is Prometheus. Its configuration accepts two properties, the Prometheus server host which defaults to `localhost` and the Prometheus server port. These values are used by SPIRE to expose an endpoint which will be used by Prometheus to pull the metrics.
 
 For the purpose of this tutorial we configured the host property using the hostname of the SPIRE Server (and Agent) but it is important to note that this configuration allows SPIRE Server and Agent to listen for remote network connections what assumes a risk. When applying a configuration like this in a production environment, the access to the endpoint should be tightly controlled. 
 
@@ -52,14 +52,14 @@ Such scenario generates a warning message on the logs to alert the operator abou
 level=warning msg="Agent is now configured to accept remote network connections for Prometheus stats collection. Please ensure access to this port is tightly controlled." subsystem_name=telemetry
 ```
 
-The second collector configured is Statsd. This is one of the collectors that supports the configuration of multiple instances. For that reason the configuration object expect a list of addresses. For this tutorial we define only one instance.
-The address configured matches the Statsd instance running on the environment. Will see the details about this instance in a following section but for now it worth noting that the address is formed by the hostname of the service and the default port for StatsD.
+The second collector configured is Statsd. This is one of the collectors that supports the configuration of multiple instances. For that reason the configuration object expects a list of addresses. For this tutorial we define only one instance.
+The address configured matches the Statsd instance running on the environment. We will see the details about this instance in a following section but for now it worth noting that the address is formed by the hostname of the service and the default port for StatsD.
 
 By configuring the address, SPIRE will be pushing metrics to the Statsd collector.
 
 ##  Graphite & Statsd Configuration
 
-We use the official docker image for Graphite & Statsd. This image already contains all the services necessary to collect and display metrics. For this tutorial we map the port `80` that belongs to the nginx proxy that reverse proxies the Graphite dashboard and the port `8125` where Statsd listens by default.
+We use the official Docker image for Graphite & Statsd. This image already contains all the services necessary to collect and display metrics. For this tutorial we map the port `80` that belongs to the nginx proxy that reverse proxies the Graphite dashboard and the port `8125` where Statsd listens by default.
 The `graphite-statsd` service definition is:
 
 ```console
@@ -94,7 +94,7 @@ scrape_configs:
     - targets: ['spire-agent:8089']
 ```
 
-To run Prometheus we use the official docker image and we mount the local directory `prometheus` to make the [prometheus.yml](/prometheus/prometheus.yml) configuration file available at the container.
+To run Prometheus we use the official Docker image and we mount the local directory `prometheus` to make the [prometheus.yml](/prometheus/prometheus.yml) configuration file available at the container.
 
 ```console
 prometheus:
