@@ -36,34 +36,12 @@ $ bash scripts/pre-set-env.sh
 The script will create all the resources needed for the SPIRE Server and SPIRE Agent to be available in the cluster.
 
 
-# Part 1: Update SPIRE Agent to Support SDS
+# Envoy SDS Support
 
-As we want Envoy to consume certificates via SDS, we need to configure SPIRE to provide them by enabling SDS support on the SPIRE Agent. The `spire-agent-configmap.yaml` file in the `k8s/envoy-x509` directory includes the following line to enable SDS support:
-
-```console
-enable_sds: true
-```
-
-From the `k8s/envoy-x509` directory apply the new configmap for the SPIRE Agent:
-
-```console
-$ kubectl apply -f spire-agent-configmap.yaml
-```
-
-Delete the SPIRE Agent pod so it is restarted using the new configuration provided in the previous step.
-
-```console
-$ kubectl -n spire delete pod $(kubectl -n spire get pods --selector=app=spire-agent --output=jsonpath="{..metadata.name}")
-```
-
-Use the following command to check the `spire-agent` status. When the pod displayed as _Running_, continue to part 2.
-
-```console
-$ kubectl -n spire get pod --selector=app=spire-agent
-```
+The SPIRE Agent has native support for the Envoy Secret Discovery Service (SDS). SDS is served over the same Unix domain socket as the Workload API and Envoy processes connecting to SDS are attested as workloads.
 
 
-# Part 2: Run Workloads
+# Part 1: Run Workloads
 
 Now let's deploy the workloads we'll use in this tutorial. It consists of three workloads: as mentioned before, two instances of the `Symbank` demo application will act as frontend services and the other, an instance of _nginx_ serving static files, will be the backend service.
 
@@ -195,7 +173,7 @@ Selector      : k8s:sa:default
 Note that the selectors for our workloads point to the Envoy container: `k8s:container-name:envoy`. This is how we configure Envoy to perform X.509 SVID authentication on a workload's behalf.
 
 
-# Part 3: Test Connections
+# Part 2: Test Connections
 
 Now that services are deployed and also registered in SPIRE, let's test the authorization that we've configured.
 
