@@ -118,7 +118,7 @@ check_for_node_attestation() {
 		sleep ${CHECKINTERVAL}
 		echo -n "${bold}Checking for node attestation... ${norm}"
 		kubectl -n spire logs ${SPIRE_SERVER_POD_NAME} > ${SERVERLOGS} || true
-		if  grep -sxq -e ".*Node attestation request completed.*k8s_sat.*" ${SERVERLOGS}; then
+		if  grep -sxq -e ".*Agent attestation request completed.*k8s_sat.*" ${SERVERLOGS}; then
 			echo "${green}ok${norm}."
 			return
 		fi

@@ -11,7 +11,7 @@ nn=$(tput sgr0) || true
 red=$(tput setaf 1) || true
 green=$(tput setaf 2) || true
 
-LOGLINE="Node attestation request completed"
+LOGLINE="Agent attestation request completed"
 wait_for_agent() {
     for ((i=0;i<120;i++)); do
         if ! kubectl -nspire rollout status statefulset/spire-server; then
