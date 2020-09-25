@@ -42,7 +42,7 @@ if [ -z "${METRIC_RECEIVED}" ]; then
     exit 1
 fi
 
-log "Checking Prometheys can reach the endpoint expose by SPIRE..."
+log "Checking that Prometheus can reach the endpoint exposed by SPIRE..."
 for ((i=0;i<60;i++)); do
     if ! docker-compose exec prometheus wget -S spire-server:8088/ | grep -qe "200 OK" ; then
         sleep 1

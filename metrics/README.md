@@ -1,11 +1,11 @@
 
 # Configure SPIRE Server and Agent to Emit Telemetry
 
-To demonstrate how to configure the SPIRE Server and the SPIRE Agent to emit telemetry we create a scenario using Docker Compose. We run a SPIRE deployment with two metric collectors, Statsd and Prometheus. Metrics collected by Statsd will be display using Graphite
+To demonstrate how to configure the SPIRE Server and the SPIRE Agent to emit telemetry we create a scenario using Docker Compose. We run a SPIRE deployment with two metric collectors, StatsD and Prometheus. Metrics collected by StatsD will be display using Graphite
 
 In this tutorial you will learn how to:
 * Configure SPIRE Server and SPIRE Agent to emit telemetry
-* Configure Statsd as a metrics collector
+* Configure StatsD as a metrics collector
 * Configure Prometheus as a metrics collector
 
 
@@ -55,9 +55,9 @@ level=warning msg="Agent is now configured to accept remote network connections 
 The second collector configured is StatsD, which is one of the collectors that supports the configuration of multiple instances. For that reason, the configuration object expects a list of addresses. For this tutorial we define only one instance.
 The address configured matches the StatsD instance running on the environment. We will see the details about this instance in a following section but for now it's worth noting that the address is formed by the hostname of the service and the default port for StatsD.
 
-By configuring the address, SPIRE will be pushing metrics to the Statsd collector.
+By configuring the address, SPIRE will be pushing metrics to the StatsD collector.
 
-##  Graphite & Statsd Configuration
+##  Graphite & StatsD Configuration
 
 We use the official Docker image for Graphite and StatsD. This image already contains all the services necessary to collect and display metrics. For this tutorial we map the port `80` that belongs to the nginx proxy that reverse proxies the Graphite dashboard and the port `8125` where StatsD listens by default.
 The `graphite-statsd` service definition is:
@@ -73,7 +73,7 @@ The `graphite-statsd` service definition is:
         - "8125:8125/udp"
 ```
 
-The Statsd service will be available at `graphite-statsd:8125` as configured for SPIRE Server in the previous section.
+The StatsD service will be available at `graphite-statsd:8125` as configured for SPIRE Server in the previous section.
 
 ## Prometheus Configuration
 
@@ -111,7 +111,7 @@ prometheus:
 
 ## Run the Scenario
 
-Use the `set-env.sh` script to run all the services that make up the scenario. The script starts the SPIRE Server, SPIRE Agent, Graphite-Statsd and Prometheus services.
+Use the `set-env.sh` script to run all the services that make up the scenario. The script starts the SPIRE Server, SPIRE Agent, Graphite-StatsD and Prometheus services.
 
 Ensure that the current working directory is `.../spire-tutorials/metrics` and run:
 
