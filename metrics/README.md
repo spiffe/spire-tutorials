@@ -20,12 +20,12 @@ Before proceeding, review the following system requirements:
 
 # Part 1: Run Services
 
-The SPIRE Server and Agent can be configured to emit telemetry by using a dedicated `telemetry { ... }` section on their configurations. At the moment of writing this tutorial SPIRE supports Prometheus, Statsd, DogStatsd, M3 and In-Memory as metric collectors. In this tutorial we'll show how to configure Prometheus and Statsd but configuration examples for the other collectors can be found on the [telemetry](https://github.com/spiffe/spire/blob/master/doc/telemetry_config.md) docs of the SPIRE project.
+The SPIRE Server and Agent can be configured to emit telemetry by using a dedicated `telemetry { ... }` section in their configuration files. Currently, SPIRE supports Prometheus, StatsD, DogStatsD, M3 and In-Memory as metrics collectors. In this tutorial we'll show how to configure Prometheus and StatsD but configuration examples for the other collectors can be found in the [telemetry](https://github.com/spiffe/spire/blob/master/doc/telemetry_config.md) docs of the SPIRE project.
 
 ## Configure SPIRE to Emit Telemetry
 
-The `telemetry` section supports the configuration of multiple collectors and for some collectors is also possible to declare multiple instances.
-The following snippet belongs to the [SPIRE Server configuration](spire/server/server.conf) file. A similar configuration is also present at the [SPIRE Agent configuration](spire/agent/agent.conf) file.
+The `telemetry` section supports the configuration of multiple collectors and for some collectors it is also possible to declare multiple instances.
+The following snippet is from the [SPIRE Server configuration](spire/server/server.conf) file. The [SPIRE Agent configuration](spire/agent/agent.conf) file is configured the same way.
 
 ```console
 telemetry {
@@ -44,22 +44,22 @@ telemetry {
 
 The first collector configured is Prometheus. Its configuration accepts two properties, the Prometheus server host which defaults to `localhost` and the Prometheus server port. These values are used by SPIRE to expose an endpoint which will be used by Prometheus to pull the metrics.
 
-For the purpose of this tutorial we configured the host property using the hostname of the SPIRE Server (and Agent) but it is important to note that this configuration allows SPIRE Server and Agent to listen for remote network connections what assumes a risk. When applying a configuration like this in a production environment, the access to the endpoint should be tightly controlled. 
+For the purpose of this tutorial we configured the host property using the hostname of the SPIRE Server (and Agent) but be aware that this configuration, which allows the SPIRE Server and Agent to listen for remote network connections, creates a security risk to SPIRE due to the open port. When applying a configuration like this in a production environment, the access to the endpoint should be tightly controlled. 
 
-Such scenario generates a warning message on the logs to alert the operator about this risk:
+This configuration generates a warning message in the logs to alert the operator about this risk:
 
 ```console
 level=warning msg="Agent is now configured to accept remote network connections for Prometheus stats collection. Please ensure access to this port is tightly controlled." subsystem_name=telemetry
 ```
 
-The second collector configured is Statsd. This is one of the collectors that supports the configuration of multiple instances. For that reason the configuration object expects a list of addresses. For this tutorial we define only one instance.
-The address configured matches the Statsd instance running on the environment. We will see the details about this instance in a following section but for now it worth noting that the address is formed by the hostname of the service and the default port for StatsD.
+The second collector configured is StatsD, which is one of the collectors that supports the configuration of multiple instances. For that reason, the configuration object expects a list of addresses. For this tutorial we define only one instance.
+The address configured matches the StatsD instance running on the environment. We will see the details about this instance in a following section but for now it's worth noting that the address is formed by the hostname of the service and the default port for StatsD.
 
 By configuring the address, SPIRE will be pushing metrics to the Statsd collector.
 
 ##  Graphite & Statsd Configuration
 
-We use the official Docker image for Graphite & Statsd. This image already contains all the services necessary to collect and display metrics. For this tutorial we map the port `80` that belongs to the nginx proxy that reverse proxies the Graphite dashboard and the port `8125` where Statsd listens by default.
+We use the official Docker image for Graphite and StatsD. This image already contains all the services necessary to collect and display metrics. For this tutorial we map the port `80` that belongs to the nginx proxy that reverse proxies the Graphite dashboard and the port `8125` where StatsD listens by default.
 The `graphite-statsd` service definition is:
 
 ```console
@@ -127,7 +127,7 @@ docker-compose logs -f -t
 
 # Part 2: Test the Deployments
 
-Let's see some real data. Open the browser and navigate to `http://localhost/` to see the Graphite web UI and, on a different tab, navigate to `http://localhost:9090/` to access the Prometheus web UI.
+Let's see some real data. Open your browser and navigate to `http://localhost/` to see the Graphite web UI and, on a different tab, navigate to `http://localhost:9090/` to access the Prometheus web UI.
 
 To generate some data, let's create a workload registration entry using the following script:
 
@@ -143,7 +143,7 @@ bash scripts/fetch_svid.sh
 
 Wait a couple of minutes while metrics are collected and then you can create graphs to review them.
 
-There are different metrics exported by SPIRE that can be analyzed. A complete list of them can be found on [here](https://github.com/spiffe/spire/blob/master/doc/telemetry.md). As an example, the following images show a graph for the different values of the remaining TTL of the SVID fetched.
+There are different metrics exported by SPIRE that can be analyzed. A complete list of them can be found on [here](https://github.com/spiffe/spire/blob/master/doc/telemetry.md). As an example, the following images show a graph of the remaining TTL of each SVID fetched.
 
 The graph using Graphite
 
