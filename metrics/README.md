@@ -1,7 +1,7 @@
 
 # Configure SPIRE Server and Agent to Emit Telemetry
 
-To demonstrate how to configure the SPIRE Server and the SPIRE Agent to emit telemetry we create a scenario using Docker Compose. We run a SPIRE deployment with two metric collectors, StatsD and Prometheus. Metrics collected by StatsD will be display using Graphite
+SPIRE Servers and Agents can emit telemetry to track activities such as Server and Agent startup time, registration entry creation, X.509 SVID creation, and successful authentication. This Docker Compose-based tutorial demonstrates how to configure the SPIRE Server and the SPIRE Agent to emit telemetry to supported metrics collectors. The tutorial shows two metrics collectors, StatsD and Prometheus, receiving metrics from a SPIRE deployment. Metrics collected by StatsD are displayed using Graphite.
 
 In this tutorial you will learn how to:
 * Configure SPIRE Server and SPIRE Agent to emit telemetry
@@ -59,7 +59,7 @@ By configuring the address, SPIRE will be pushing metrics to the StatsD collecto
 
 ##  Graphite & StatsD Configuration
 
-We use the official Docker image for Graphite and StatsD. This image already contains all the services necessary to collect and display metrics. For this tutorial we map the port `80` that belongs to the nginx proxy that reverse proxies the Graphite dashboard and the port `8125` where StatsD listens by default.
+We use the official Docker image for Graphite and StatsD. This image already contains all the services necessary to collect and display metrics. For this tutorial we map the port `80` that belongs to the nginx proxy that reverse proxies the Graphite dashboard and the port `8125` where StatsD listens by default to the same external ports of 80 and 8125, respectively.
 The `graphite-statsd` service definition is:
 
 ```console
@@ -77,7 +77,7 @@ The StatsD service will be available at `graphite-statsd:8125` as configured for
 
 ## Prometheus Configuration
 
-Due to the pull nature of Prometheus we need to configure the HTTP endpoint where it will scrape the metrics. We've already configured SPIRE to expose the HTTP endpoint via the telemetry configuration so now we need to indicate to Prometheus that it should collect metrics from that endpoint. We achieve this by configuring the target with the hostname of the SPIRE server (or SPIRE Agent) and the correct port number (e.g. 8088 for the SPIRE Server and 8089 for the SPIRE Agent).
+Due to the pull nature of Prometheus we need to configure the HTTP endpoint where it will scrape the metrics. We've already configured SPIRE to expose the HTTP endpoint via the telemetry configuration so now we need to indicate to Prometheus that it should collect metrics from that endpoint. We achieve this by setting the `target` option to the hostname of the SPIRE server (or SPIRE Agent) and the correct port number (e.g. 8088 for the SPIRE Server and 8089 for the SPIRE Agent).
 
 By default the HTTP resource path to fetch metrics from targets is `/metrics` but SPIRE does not expose metrics on that path. Instead, it does on the `/` path. These configurations are part of the [prometheus.yml](prometheus/prometheus.yml) configuration file.
 
@@ -143,7 +143,7 @@ bash scripts/fetch_svid.sh
 
 Wait a couple of minutes while metrics are collected and then you can create graphs to review them.
 
-There are different metrics exported by SPIRE that can be analyzed. A complete list of them can be found on [here](https://github.com/spiffe/spire/blob/master/doc/telemetry.md). As an example, the following images show a graph of the remaining TTL of each SVID fetched.
+There are different metrics exported by SPIRE that can be analyzed. As an example, the following images show a graph of the remaining TTL of each SVID fetched.
 
 The graph using Graphite
 
