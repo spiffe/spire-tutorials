@@ -22,6 +22,7 @@ clean-env
 # Creates Envoy JWT scenario
 bash "${DIR}"/scripts/set-env.sh
 
+echo "${bb}Let's run the test... ${nn}"
 # If balance is part of the response, then the request was accepted by the backend and token was valid.
 BALANCE_LINE="Your current balance is 10.95"
 if curl -s $(minikube service frontend --url) | grep -qe "$BALANCE_LINE"; then
