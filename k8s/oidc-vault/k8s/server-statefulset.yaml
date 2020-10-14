@@ -46,7 +46,7 @@ spec:
             timeoutSeconds: 3
         - name: spire-oidc
           image: gcr.io/spiffe-io/oidc-discovery-provider:0.10.0
-          args:n
+          args:
           - -config
           - /run/spire/oidc/config/oidc-discovery-provider.conf
           ports:

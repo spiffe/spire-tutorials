@@ -1,13 +1,13 @@
-# Using SPIRE and OIDC to authenticate workloads to retrieve Vault secrets
+# Using SPIRE and OIDC to Authenticate Workloads to Retrieve Vault Secrets
 
-This tutorial builds on the [Kubernetes Quickstart](https://spiffe.io/spire/try/getting-started-k8s/) guide to describe how a SPIRE identified workload can, using a JWT-SVID, authenticate to an HashiCorp Vault server, assume an identity, and retrieve secrets. This avoids the need to spread Vault credentials.
+This tutorial builds on the [Kubernetes Quickstart](https://spiffe.io/spire/try/getting-started-k8s/) guide to describe how a SPIRE identified workload can, using a JWT-SVID, authenticate to an HashiCorp Vault Server, assume an identity, and retrieve secrets. This avoids the need to spread Vault credentials.
 
 In this tutorial you will learn how to:
 
 * Deploy the OIDC Discovery Provider Service
 * Create the required DNS A record to point to the OIDC Discovery document endpoint
 * Set up a local Vault server to store secrets
-* Configure a SPIRE Server OIDC provider as an authentication method for the Vault server
+* Configure a SPIRE Server OIDC provider as an authentication method for the Vault Server
 * Test access to secrets using a SPIRE-provided identity
 
 ## Prerequisites
@@ -17,10 +17,13 @@ Note the following required accounts, prerequisites, and limitations before star
 * You'll need access to the Kubernetes environment that you configured when going through [Kubernetes Quickstart](https://spiffe.io/spire/try/getting-started-k8s/). The Kubernetes environment must be able to expose an Ingress to the public internet. _Note: This is generally not possible for local Kubernetes environments such as Minikube._
 * You'll need the ability to configure a DNS A record for the SPIRE OIDC Discovery document endpoint (see [Part 2](#part-2-configure-dns-for-the-oidc-discovery-provider-ip-address))
 
-
 # Part 1: Configure SPIRE Components
 
-In the first part of this procedure, you will configure the SPIRE components in Kubernetes deployment. The YAML descriptor files are located in the under the [k8s](./k8s/) directory.
+In the first part of this procedure, you will configure the SPIRE components in a Kubernetes deployment.
+
+## Download Kubernetes YAML Files for this Tutorial
+
+To get all of the files required for this tutorial, clone https://github.com/spiffe/spire-tutorials. The YAML files that describe the Kubernetes deployment are in the `k8s/oidc-vault/k8s` directory.
 
 ## Replace Placeholder Strings in YAML Files
 
@@ -29,18 +32,18 @@ The following strings in the YAML files must be substituted for values specific 
 | String | Description | Files to Change |
 | --- | --- | --- |
 | `MY_EMAIL_ADDRESS` | Replace with a valid email address to satisfy the terms of service for the Let's Encrypt certificate authority used in OIDC federation. No email will actually be sent to this address. Example value: `user@example.org` | `oidc-dp-configmap.yaml` (1 appearance) |
-| `MY_DISCOVERY_DOMAIN` | Replace with the domain that you will use in the A record for the OIDC Discovery document endpoint. See [Part 2](#part-2-configure-dns-for-the-oidc-discovery-provider-ip-address) for details. Example value: `oidc-discovery.example.org` | `ingress.yaml` (2 appearances), `oidc-dp-configmap.yaml` (1 appearance), `server-configmap.yaml` (1 appearance) |
+| `MY_DISCOVERY_DOMAIN` | Replace with the domain that you will use in the A record for the OIDC Discovery Document endpoint. See [Part 2](#part-2-configure-dns-for-the-oidc-discovery-provider-ip-address) for details. Example value: `oidc-discovery.example.org` | `ingress.yaml` (2 appearances), `oidc-dp-configmap.yaml` (1 appearance), `server-configmap.yaml` (1 appearance) |
 | `MY_CLUSTER_NAME` | Replace with the name of the Kubernetes cluster where SPIRE will be deployed. Example value: `gke_dev-prj_name-central1-c_vault-oidc-tutorial` | `server-configmap.yaml` (1 appearance) |
 
 In the YAML files, instances of the `example.org` [trust domain](https://spiffe.io/spiffe/concepts/#trust-domain) are valid to use for this tutorial and do not need to be changed.
 
 ## Deploy the OIDC Discovery Provider Configmap
 
-The SPIRE OIDC Discovery Provider provides a URL to the location of the discovery document specified by the OIDC protocol. The `oidc-dp-configmap.yaml` file specifies the URL to the OIDC Discovery Provider.
+The SPIRE OIDC Discovery Provider provides a URL to the location of the Discovery Document specified by the OIDC protocol. The `oidc-dp-configmap.yaml` file specifies the URL to the OIDC Discovery Provider.
 
 Before running the command below, ensure that you have replaced the `MY_DISCOVERY_DOMAIN` placeholder with the FQDN of the Discovery Provider as described in [Replace Placeholder Strings in YAML Files](#replace-placeholder-strings-in-yaml-files).
 
-Change to the directory `k8s/oidc-vault/k8s` containing the YAML files that describe the Kubernetes deployment and use the following command to apply the updated server configmap, the configmap for the OIDC Discovery Provider, and deploy the updated `spire-server` StatefulSet:
+Change to the directory `k8s/oidc-vault/k8s` containing the YAML files that describe the Kubernetes deployment and use the following command to apply the updated server ConfigMap, the ConfigMap for the OIDC Discovery Provider, and deploy the updated `spire-server` StatefulSet:
 
 ```console
 $ kubectl apply \
@@ -64,7 +67,7 @@ spire-server spire-oidc
 
 ## Configure the OIDC Discovery Provider Service and Ingress
 
-Use the following command to set up a service definition for the OIDC Discovery Provider and to configure ingress for that service:
+Use the following command to set up a service definition for the OIDC Discovery Provider and to configure an Ingress for that service:
 
 ```console
 $ kubectl apply \
@@ -77,7 +80,7 @@ $ kubectl apply \
 
 As part of this tutorial, you will need to register a public DNS record that will resolve to the public IP address of your Kubernetes cluster. This will require you or an administrator to have registered a domain name (e.g. `yutani.com`) with a domain name registrar, have configured its name server to point to a DNS service, and have the ability to create a new A record for the subdomain (e.g. `oidc-discovery.yutani.com`) in that DNS service. If you don't have a registered domain name or access to a DNS service, services like Google Domains can help you set one up for a fee.
 
-In this tutorial, the subdomain that you create will provide an endpoint to the Discovery Document specified by the OIDC protocol. The Vault server will query this endpoint as part of the authentication handshake between the Vault server and SPIRE.
+In this tutorial, the subdomain that you create will provide an endpoint to the Discovery Document specified by the OIDC protocol. The Vault Server will query this endpoint as part of the authentication handshake between the Vault Server and SPIRE.
 
 Also note that the integration with Vault is also possible using [JWKS](https://tools.ietf.org/html/rfc7517). This method does not require a DNS entry but does require that Vault be deployed inside the Kubernetes deployment, which is not the case in the set of instructions on this tutorial. The JWKS method is not fully described here, but you can find more information on the [Vault documentation site](https://www.vaultproject.io/api-docs/auth/jwt#jwks_url).
 
@@ -97,12 +100,12 @@ spire-oidc     LoadBalancer   10.12.0.18    34.82.139.13   443:30198/TCP    108s
 Using your preferred DNS tool, put the `MY_DISCOVERY_DOMAIN` domain and the `spire-oidc` external IP address in a new DNS A record. The A record should take the following form:
 
 ```console
-MY_DISCOVERY_DOMAIN          A        EXTERNAL-IP for spire-oidc service
+MY_DISCOVERY_DOMAIN          A        <EXTERNAL-IP for spire-oidc service>
 ```
 
 For example:
 ```console
-oidc-discovery.example.org   A        93.184.216.34
+oidc-discovery.example.org   A        34.82.139.13
 ```
 
 Note: Do not use the `oidc-discovery.example.org` domain or IP address shown above.
@@ -145,15 +148,15 @@ As with any change to DNS, it will take minutes or hours for the new A record to
    ```
 
 
-# Part 3: Configure Vault server
+# Part 3: Configure the Vault Server
 
-After configuring an A Record for the OIDC discovery document endpoint, continue with configuring the Vault server.
+After configuring an A Record for the OIDC Discovery document endpoint, continue with configuring the Vault Server.
 
-## Create the config file and run the Vault server
+## Create the Config File and Run the Vault Server
 
 First, let's create a simple config file for our local Vault server.
 
-1. Create a file on your local computer called `config.hcl` (you can find the file [here](./vault/config.hcl)). Here we define that the vault server will listen on our local interface 127.0.0.1 port 8200. We'll disable TLS for simplicity (don't do this on production) and set a default `file` backend 
+1. Create a file on your local computer called `config.hcl` (you can find the file [here](./vault/config.hcl)). Here we define that the Vault Server will listen on our local interface 127.0.0.1 at port 8200. We'll disable TLS for simplicity (don't do this on a Production environment) and set a default `file` backend :
 
    ``` console
    listener "tcp" {
@@ -172,14 +175,15 @@ First, let's create a simple config file for our local Vault server.
    $ vault server -config config.hcl
    ```
 
-3. Check that your Vault server has started correctly and has no errors, you may see some warnings.
+3. Check that your Vault Server has started correctly and has no errors. It is typical to see some warning messages. The following message indicates that the Vault Server has started:
 
    ```console
    ==> Vault server started! Log data will stream in below:
    ```
 
-## Initialize and unseal the vault
+## Initialize and Unseal the Vault
 
+Ensure that you are in possession of your whip and your lucky fedora.
 Before authenticating and using our Vault server we need to initialize and unseal it.
 
 1. Set the `VAULT_ADDR` environment variable. This tells the Vault CLI where it needs to talk to.
@@ -188,7 +192,7 @@ Before authenticating and using our Vault server we need to initialize and unsea
    $ export VAULT_ADDR=http://127.0.0.1:8200
    ```
 
-1. Initialize the vault
+1. Initialize Vault:
 
    ```console
    $ vault operator init
@@ -205,9 +209,9 @@ Before authenticating and using our Vault server we need to initialize and unsea
    Initial Root Token: s.PFuCtYgzjh6mRAfAVjfsGv3O
    ...
    ```
-   Take note of the Unseal Keys and the Initial Root Key
+   Take note of the Unseal Keys and the Initial Root Key.
 
-2. Now we need to unseal our vault. We use 3 of our 5 Unseal Keys (whichever you want) and the Initial Root Key from the previous step.
+2. Now we need to unseal our Vault. We use 3 of our 5 Unseal Keys (whichever you want) and the Initial Root Key from the previous step.
    When we run the command we are prompted for one of our Unseal Keys.
    
    We need to repeat this process three times with three different keys.
@@ -221,7 +225,7 @@ Before authenticating and using our Vault server we need to initialize and unsea
    ---                -----
    Seal Type          shamir
    Initialized        true
-   Sealed             true # <- this means the vault is still sealed
+   Sealed             true # <- this means that Vault is still sealed
    Total Shares       5
    Threshold          3
    Unseal Progress    1/3 # <- this is how many keys you have entered
@@ -229,19 +233,19 @@ Before authenticating and using our Vault server we need to initialize and unsea
    Version            1.3.4
    HA Enabled         false
    ```
-   Note that here we see a key `Sealed` that tells us that the vault has not been unsealed yet, and a key `Unseal Progress` that says how many correct Unseal Keys we have entered
+   Note that here we see a key `Sealed` that tells us that Vault has not been unsealed yet, and a key `Unseal Progress` that says how many correct Unseal Keys we have entered.
    
-   Once we entered three different correct keys we have successfully unsealed the vault and the key `Seal` must be `false`
+   Once we entered three different correct keys we have successfully unsealed Vault and the key `Seal` must be `false`.
    
    ```console
    Sealed          false
    ```
 
-### Enable secrets engine and store a test secret
+### Enable Secrets Engine and Store a Test Secret
 
-Using our root access via the CLI (the Initial Root Key in `VAULT_TOKEN`) we are going to enable the `kv` (key-value) secrets engine and store a secret that we are going to retrieve later using our SPIRE-enabled login.
+Using our root access via the CLI (by storing the Initial Root Key in a `VAULT_TOKEN` environment variable) we are going to enable the `kv` (key-value) secrets engine and store a secret that we are going to retrieve later using our SPIRE-enabled login.
 
-1. Given that we are probably in a different terminal window, let's set the `VAULT_ADDR` again, and the `VAULT_TOKEN` with the Initial Root Key.
+1. Given that you may be in a different terminal window, let's set the `VAULT_ADDR` again, and the `VAULT_TOKEN` with the Initial Root Key.
 
    ```console
    $ export VAULT_ADDR=http://127.0.0.1:8200
@@ -262,7 +266,7 @@ Using our root access via the CLI (the Initial Root Key in `VAULT_TOKEN`) we are
 
 ### Set up Vault OIDC federation with SPIRE
 
-In this step we'll configure the Vault server to federate with our SPIRE Server running on a Kubernetes cluster.
+In this step we'll configure the Vault Server to federate with our SPIRE Server running on a Kubernetes cluster.
 
 1. Enable the JWT authentication method
 
@@ -328,12 +332,12 @@ Now we are going to get an access token to use with Vault, through SPIRE Federat
       ```console
       {"role": "dev","jwt": "<PASE_YOUR_JWT_TOKEN_HERE>"}
       ```
-   2. Authenticate against the Vault server using the payload
+   2. Authenticate against the Vault Server using the payload
       ```console
       $ curl --request POST --data @payload.json http://localhost:8200/v1/auth/jwt/login
       ```
-   3. Under `auth`, grab your `client_token` from the response, this is how we are going to identify ourselves against the Vault REST API.
-   Note that we have defined `my-dev-policy` we created before. This will allows us to read our secret.
+   3. Under `auth`, grab your `client_token` from the response(for example, save it in your clipboard). This is how we are going to identify ourselves against the Vault REST API.
+   In the output, notice the `my-dev-policy` that we specified in Vault before. This will allow us to read our secret.
       ```json
       {
          "request_id": "78bc2546-8e3f-900e-ac32-ae590870ea67",
@@ -373,7 +377,7 @@ Let's test our new client token and try to get the secret we created before.
 1. Get the secret using our `client_token` from the previous step.
    ```console
    $ curl \
-        -H "X-Vault-Token: s.lQ3KIYjUnFwCJkUnOKKF8kxn" \
+        -H "X-Vault-Token: <PASTE_YOUR_client_token_HERE>" \
         http://127.0.0.1:8200/v1/secret/my-super-secret
    ```
    outputs
@@ -384,7 +388,7 @@ Let's test our new client token and try to get the secret we created before.
       "renewable": false,
       "lease_duration": 2764800,
       "data": {         
-         "test": "123"      # <- here's our secret
+         "test": "123"      # <- here's our secret key-value pair
       },
       "wrap_info": null,
       "warnings": null,
@@ -406,7 +410,7 @@ Keep in mind that these commands will also remove the setup that you configured 
    $ kubectl delete deployment client
    ```
 
-2. Delete all deployments and configurations for the agent, server, and namespace:
+2. Delete all deployments and configurations for the SPIRE Agent, Server, and namespace:
 
    ```console
    $ kubectl delete namespace spire
