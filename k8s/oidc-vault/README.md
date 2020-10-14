@@ -156,7 +156,7 @@ After configuring an A Record for the OIDC Discovery document endpoint, continue
 
 First, let's create a simple config file for our local Vault server.
 
-1. Create a file on your local computer called `config.hcl` (you can find the file [here](./vault/config.hcl)). Here we define that the Vault Server will listen on our local interface 127.0.0.1 at port 8200. We'll disable TLS for simplicity (don't do this on a Production environment) and set a default `file` backend :
+1. Create a file on your local computer called `config.hcl` (you can find the file [here](./vault/config.hcl)). Here we define that the Vault Server will listen on our local interface 127.0.0.1 at port 8200. We'll disable TLS for simplicity (don't do this on a Production environment) and set a default `file` backend:
 
    ``` console
    listener "tcp" {
@@ -186,7 +186,7 @@ First, let's create a simple config file for our local Vault server.
 Ensure that you are in possession of your whip and your lucky fedora.
 Before authenticating and using our Vault server we need to initialize and unseal it.
 
-1. Set the `VAULT_ADDR` environment variable. This tells the Vault CLI where it needs to talk to.
+1. Set the `VAULT_ADDR` environment variable. This tells the Vault CLI where it needs to talk to:
 
    ```console
    $ export VAULT_ADDR=http://127.0.0.1:8200
@@ -214,7 +214,7 @@ Before authenticating and using our Vault server we need to initialize and unsea
 2. Now we need to unseal our Vault. We use 3 of our 5 Unseal Keys (whichever you want) and the Initial Root Key from the previous step.
    When we run the command we are prompted for one of our Unseal Keys.
    
-   We need to repeat this process three times with three different keys.
+   We need to repeat this process three times with three different keys:
 
    ```console
    $ vault operator unseal
@@ -245,42 +245,42 @@ Before authenticating and using our Vault server we need to initialize and unsea
 
 Using our root access via the CLI (by storing the Initial Root Key in a `VAULT_TOKEN` environment variable) we are going to enable the `kv` (key-value) secrets engine and store a secret that we are going to retrieve later using our SPIRE-enabled login.
 
-1. Given that you may be in a different terminal window, let's set the `VAULT_ADDR` again, and the `VAULT_TOKEN` with the Initial Root Key.
+1. Given that you may be in a different terminal window, let's set the `VAULT_ADDR` again, and the `VAULT_TOKEN` with the Initial Root Key:
 
    ```console
    $ export VAULT_ADDR=http://127.0.0.1:8200
    $ export VAULT_TOKEN="s.PFuCtYgzjh6mRAfAVjfsGv3O"
    ```
 
-2. Enable the `kv` (key-value) secrets engine on the `secret/` path
+2. Enable the `kv` (key-value) secrets engine on the `secret/` path:
 
    ```console
    $ vault secrets enable -path=secret kv
    ```
 
-3. Put a secret in the new path, this is what we are going to retrieve using our SPIRE-enabled identity.
+3. Put a secret in the new path. This is what we are going to retrieve using our SPIRE-enabled identity. Since we've specified a key-value Vault secret engine, we'll store a key-value pair in Vault:
 
    ```console
    $ vault kv put secret/my-super-secret test=123
    ```
 
-### Set up Vault OIDC federation with SPIRE
+### Set up Vault OIDC Federation with SPIRE
 
-In this step we'll configure the Vault Server to federate with our SPIRE Server running on a Kubernetes cluster.
+In this section, we'll configure the Vault Server to federate with our SPIRE Server that is running on a Kubernetes cluster.
 
-1. Enable the JWT authentication method
+1. Enable the JWT authentication method:
 
    ```console
    $ vault auth enable jwt
    ```
 
-2. Set up our OIDC Discovery URL
+2. Set up our OIDC Discovery URL:
 
    ```console
    $ vault write auth/jwt/config oidc_discovery_url=https://spire-vault-oidc.skitalee.org default_role=“dev”
    ```
 
-3. Define a policy `my-dev-policy` that will be assigned to a `dev` role that we'll create in the next step.
+3. Define a policy `my-dev-policy` that will be assigned to a `dev` role that we'll create in the next step:
 
    Create a policy file called `vault-policy.hcl` with the following content (you can find the file [here](./vault/vault-policy.hcl)):
 
@@ -290,24 +290,26 @@ In this step we'll configure the Vault Server to federate with our SPIRE Server 
    }
    ```
 
-   and create the policy
+   and create the policy:
 
    ```console
    $ vault policy write my-dev-policy vault-policy.hcl
    ```
 
-3. Create a role `dev`, binding the subject and audience that will be in the JWT, and configuring the `sub` claim that will be used to identify the user. Also set up a 24 hours TTL for testing purposes and a policy `my-dev-policy` that will be assigned to the tokens.
+3. Create a role `dev`, binding the subject and audience that will be in the JWT, and configuring the `sub` claim that will be used to identify the user. Also set up a 24 hour TTL for testing purposes and a policy `my-dev-policy` that will be assigned to the tokens:
 
    ```console
    $ vault write auth/jwt/role/dev role_type=jwt user_claim=sub bound_audiences=TESTING bound_subject=spiffe://example.org/ns/default/sa/default token_ttl=24h token_policies=my-dev-policy
    ```
 
-## Get Vault credentials
+## Get Vault Credentials
 
-Now we are going to get an access token to use with Vault, through SPIRE Federation using our client to get an identity.
+Now we are going to get an access token to use with Vault. We'll use a sample client workload to get an identity using the SPIRE Federation feature.
 
 ### Get the JWT-SVID
-   1. First, let get the client pod name we created in the Kubernetes Getting Started Guide
+
+   1. First, let's get the client pod name we created in the Kubernetes Getting Started Guide:
+
       ```console
       $ kubectl get pods
       ```
@@ -316,23 +318,30 @@ Now we are going to get an access token to use with Vault, through SPIRE Federat
       NAME                      READY   STATUS    RESTARTS   AGE
       client-7c94755d97-mq8dl   1/1     Running   1          10d
       ```
-   2. Get the JWT-SVID that identifies our client workload.
+
+   2. Get the JWT-SVID that identifies our client workload:
+
       ```console
       kubectl exec client-7c94755d97-mq8dl -- /opt/spire/bin/spire-agent api fetch jwt \
          -audience TESTING \
          -socketPath /run/spire/sockets/agent.sock
       ```
-   3. Get the JWT piece of the response, under `token(spiffe://example.org/ns/default/sa/default)`. Something like this:
+
+   3. Copy the JWT from the response into your clipboard. You'll find the JWT under `token(spiffe://example.org/ns/default/sa/default)`. It looks something like this:
+
       ```console
       eyJhbGciOiJSUzI1NiIsImtpZCI6IjQ0c0R2cW9kRHRUUmVqR1pTMmZ4c2RUdTNuc3FmTzl6IiwidHlwIjoiSldUIn0.eyJhdWQiOlsiVEVTVElORyJdLCJleHAiOjE1ODgwOTIyODgsImlhdCI6MTU4ODA5MTk4OCwiaXNzIjoiaHR0cHM6Ly9zcGlyZS12YXVsdC1vaWRjLnNraXRhbGVlLm9yZyIsInN1YiI6InNwaWZmZTovL2V4YW1wbGUub3JnL25zL2RlZmF1bHQvc2EvZGVmYXVsdCJ9.Me8U9qE6yyd5mezSiMcPgwoJm2ihQZXTL-0ClAJyssg9yhCx1D4Gea3_n4pFjp86RfLiUSsGzyjBL4r0FRA6_0grJFnLdret2ynni6zZyYw6s0k38vsJIZ4rZNfY09IanQ1Ak_GW1yHVOtzRqd3vr8GgrtXzHzsWfl5YgzhWozJUYVIj1eN91aftJ-Iuvo2KYcxu1QgrIhP8Ec_6m2Kg06oRsKCb0a6C4J78wW-lXd5orDvrO2wAksmUjBwtxFA6EggtVVSKE85EG7gUgPT1xU7B2rggXC1RKUgxXqpFWHk-7qbFdk7enurxsSSGqvVSIW7KK0sYTcw5GeKze0iggQ
       ```
 
 ### Authenticate to Vault Server
-   1. Create a file called `payload.json` with your JWT from the previous step
+   1. Create a file called `payload.json` with your JWT from the previous step:
+
       ```console
-      {"role": "dev","jwt": "<PASE_YOUR_JWT_TOKEN_HERE>"}
+      {"role": "dev","jwt": "<PASTE_YOUR_JWT_TOKEN_HERE>"}
       ```
-   2. Authenticate against the Vault Server using the payload
+
+   2. Authenticate against the Vault Server using the payload:
+
       ```console
       $ curl --request POST --data @payload.json http://localhost:8200/v1/auth/jwt/login
       ```
@@ -352,7 +361,7 @@ Now we are going to get an access token to use with Vault, through SPIRE Federat
             "accessor": "ZdVaNVQDcOL15FNSjyWogwiX",
             "policies": [
                   "default",
-                  "my-dev-policy"  # <- role policy we created
+                  "my-dev-policy"  # <- the role policy we created
             ],
             "token_policies": [
                   "default",
@@ -374,13 +383,16 @@ Now we are going to get an access token to use with Vault, through SPIRE Federat
 
 Let's test our new client token and try to get the secret we created before.
 
-1. Get the secret using our `client_token` from the previous step.
+1. Get the secret using our `client_token` from the previous step:
+
    ```console
    $ curl \
         -H "X-Vault-Token: <PASTE_YOUR_client_token_HERE>" \
         http://127.0.0.1:8200/v1/secret/my-super-secret
    ```
+
    outputs
+   
    ```json
    {
       "request_id": "1a10d3f7-e3b4-2c05-48c5-94a04f3758bc",
