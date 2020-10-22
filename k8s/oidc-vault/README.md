@@ -154,7 +154,7 @@ After configuring an A Record for the OIDC Discovery document endpoint, continue
 
 ## Install Vault
 
-Ensure that HashiCorp Vault is installed on your local computer and that the location of the `vault` executable is in your system `PATH`. Verify that Vault is installed by typing `vault version` in a terminal window. The output indicates Vault version if it is installed, or a _command not found_ error otherwise, in which case you need to install Vault. Packages are available for some Linux flavors, MacOS (via Homebrew) and Windows (via Chocolatey). Alternatively, you can [download a precompiled binary](https://www.vaultproject.io/downloads) for your operating system. For complete installation instructions, see [Install Vault](https://www.vaultproject.io/docs/install) or [Getting Started - Install Vault](https://learn.hashicorp.com/tutorials/vault/getting-started-install).
+Ensure that HashiCorp Vault is installed on your local computer and that the location of the `vault` executable is in your system `PATH`. Verify that Vault is installed by typing `vault version` in a terminal window. The output indicates the Vault version if it is installed, or a _command not found_ error otherwise, in which case you need to install Vault. Packages are available for some Linux flavors, MacOS (via Homebrew), and Windows (via Chocolatey). Alternatively, you can [download a precompiled binary](https://www.vaultproject.io/downloads) for your operating system. For complete installation instructions, see [Install Vault](https://www.vaultproject.io/docs/install) or [Getting Started - Install Vault](https://learn.hashicorp.com/tutorials/vault/getting-started-install).
  
 Use a new Vault installation for this tutorial. An existing Vault installation may have configuration settings that conflict with this tutorial. 
 
@@ -242,7 +242,7 @@ Before authenticating and using our Vault server we need to initialize and unsea
    ```
    Note that here we see a key `Sealed` that tells us that Vault has not been unsealed yet, and a key `Unseal Progress` that says how many correct Unseal Keys we have entered.
    
-   Once we entered three different correct keys we have successfully unsealed Vault and the key `Seal` changes to `false`.
+   Once we entered three different correct keys we have successfully unsealed Vault and the key `Sealed` changes to `false`.
    
    ```console
    Sealed          false
