@@ -6,6 +6,7 @@ The tutorials in this repo describe how to install SPIRE and integrate it with s
 | --- | --- |
 | [Quickstart for Kubernetes](https://spiffe.io/spire/try/getting-started-k8s/) | Kubernetes |
 | [AWS OIDC Authentication](https://spiffe.io/spire/try/oidc-federation-aws/) | Kubernetes |
+| [Vault OIDC Authentication](k8s/oidc-vault) | Kubernetes |
 | [Integrating with Envoy using X.509 certs](k8s/envoy-x509) | Kubernetes |
 | [Integrating with Envoy using JWT](k8s/envoy-jwt) | Kubernetes |
 | [Nested SPIRE](nested-spire) | Docker Compose |
