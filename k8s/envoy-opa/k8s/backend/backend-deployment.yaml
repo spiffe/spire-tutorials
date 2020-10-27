@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: envoy
+        image: envoyproxy/envoy-alpine:v1.14.1
+        imagePullPolicy: Always
+        args: ["-l", "debug", "--local-address-ip-version", "v4", "-c", "/run/envoy/envoy.yaml"]
+        ports:
+        - containerPort: 9001
+        volumeMounts:
+        - name: envoy-config
+          mountPath: "/run/envoy"
+          readOnly: true
+        - name: spire-agent-socket
+          mountPath: /run/spire/sockets
+          readOnly: true
+      - name: backend
+        image: nginx
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: backend-balance-json-data
+          mountPath: "/usr/share/nginx/html/balances"
+          readOnly: true
+        - name: backend-profile-json-data
+          mountPath: "/usr/share/nginx/html/profiles"
+          readOnly: true
+        - name: backend-transactions-json-data
+          mountPath: "/usr/share/nginx/html/transactions"
+          readOnly: true
+      - name: opa
+        image: openpolicyagent/opa:latest-istio
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: opa-envoy
+            containerPort: 8182
+            protocol: TCP
+          - name: opa-api-port
+            containerPort: 8181
+            protocol: TCP
+        args:
+          - "run"
+          - "--server"
+          - "--config-file=/run/opa/opa-config.yaml"
+          - "/run/opa/opa-policy.rego"
+        volumeMounts:
+          - name: backend-opa-policy
+            mountPath: /run/opa
+            readOnly: true
+      volumes:
+      - name: envoy-config
+        configMap:
+          name: backend-envoy
+      - name: backend-opa-policy
+        configMap:
+          name: backend-opa-policy-config
+      - name: spire-agent-socket
+        hostPath:
+          path: /run/spire/sockets
+          type: Directory
+      - name: backend-balance-json-data
+        configMap:
+          name: backend-balance-json-data
+      - name: backend-profile-json-data
+        configMap:
+          name: backend-profile-json-data          
+      - name: backend-transactions-json-data
+        configMap:
+          name: backend-transactions-json-data
+

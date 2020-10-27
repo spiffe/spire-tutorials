@@ -1,0 +1,14 @@
+configMapGenerator:
+- name: backend-envoy
+  files:
+    - backend/config/envoy.yaml
+- name: backend-opa-policy-config
+  files:
+    - backend/config/opa-policy.rego
+    - backend/config/opa-config.yaml    
+         
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+  - backend/backend-deployment.yaml

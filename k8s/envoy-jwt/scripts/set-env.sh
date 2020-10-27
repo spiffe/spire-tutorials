@@ -38,8 +38,6 @@ restart_deployments() {
     kubectl scale deployment frontend-2 --replicas=1
 }
 
-# logs_contains_line() {
-# }
 
 wait_for_envoy() {
     # wait until deployments are completed
