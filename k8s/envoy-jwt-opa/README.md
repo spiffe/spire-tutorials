@@ -6,7 +6,7 @@
 This tutorial builds on the [SPIRE Envoy-JWT Tutorial](../envoy-jwt/README.md) to demonstrate how to combine SPIRE, Envoy and OPA to perform JWT SVID authentication and request authorization. The changes required to implement request authorization with OPA are shown here as a delta to that tutorial, so you should run, or at least read through, the SPIRE Envoy-JWT tutorial first.
 
 
-To illustrate request authorization with OPA, we add a new sidecar to the backend service used in the SPIRE Envoy JWT tutorial. The new sidecar acts as a new [external authorization filter](https://www.envoyproxy.io/docs/envoy/v1.14.1/intro/arch_overview/security/ext_authz_filter#arch-overview-ext-authz) for Envoy.
+To illustrate request authorization with OPA, we add a new sidecar to the backend service used in the SPIRE Envoy JWT tutorial. The new sidecar acts as a new [External Authorization Filter](https://www.envoyproxy.io/docs/envoy/v1.14.1/intro/arch_overview/security/ext_authz_filter#arch-overview-ext-authz) for Envoy.
 
 
 ![SPIRE Envoy-JWT with OPA integration diagram][diagram]
@@ -45,12 +45,12 @@ The script will create all the resources needed for the SPIRE Server and SPIRE A
 
 Assuming the SPIRE Envoy JWT Tutorial as a starting point, there are some resources that need to be created.
 The goal is to have the requests authorized by the OPA Agent before hitting the `backend` service. There is an mTLS connection established between Envoy instances where JWT SVIDs are transmitted in requests as `authorization` headers. So the missing part is to add an OPA Agent to authorize requests based on policies.
-The solution applied in this tutorial consists of adding a new external authorization filter to the Envoy instance running in front of the `backend` service. The new filter invokes the OPA Agent after the request pass through the Envoy JWT Auth Helper (first filter) and its job is to check whether the request should be authorized or denied.
+The solution applied in this tutorial consists of adding a new External Authorization Filter to the Envoy instance running in front of the `backend` service. The new filter invokes the OPA Agent after the request passes through the Envoy JWT Auth Helper (the first filter) and its job is to check whether the request should be authorized or denied.
 
 ## Update Deployments
 
 In order to let OPA authorize or reject requests coming to the `backend` service it is necessary to add OPA as a sidecar to the deployment.
-We use the `openpolicyagent/opa:latest-istio` image which extends OPA with a gRPC server that implements the Envoy External Authorization API so OPA can communicate policy decisions with Envoy. The new container is added and configured as follow in [`backend-deployment.yaml`](k8s/backend/backend-deployment.yaml):
+We use the `openpolicyagent/opa:latest-istio` image which extends OPA with a gRPC server that implements the Envoy External Authorization API so OPA can communicate policy decisions with Envoy. The new container is added and configured as follows in [`backend-deployment.yaml`](k8s/backend/backend-deployment.yaml):
 
 
 ```console
@@ -83,7 +83,7 @@ The ConfigMap `backend-opa-policy` needs to be added into the `volumeMounts` sec
     name: backend-opa-policy-config
 ```
 
-The ConfigMap `backend-opa-policy` provides two resources, `opa-config.yaml` described in [OPA Configuration](#opa-configuration) and the `opa-policy.rego` policy explained in the [Rego Policy](#opa-policy) section.
+The ConfigMap `backend-opa-policy` provides two resources, `opa-config.yaml` described in [OPA Configuration](#opa-configuration) and the `opa-policy.rego` policy explained in the [OPA Policy](#opa-policy) section.
 
 
 ## OPA Configuration
@@ -183,7 +183,7 @@ Envoy needs to know how to contact the OPA Agent just configured to perform the 
       timeout: 0.5s
 ```
 
-The configuration tells Envoy to contact the OPA Agent at 127.0.0.1 on port 8182. This matches the configuration for OPA explained at the [OPA Configuration](#opa-configuration) section.
+The configuration tells Envoy to contact the OPA Agent at 127.0.0.1 on port 8182. This matches the configuration for OPA explained in the [OPA Configuration](#opa-configuration) section.
 
 ## Apply the New Resources
 
@@ -200,8 +200,8 @@ deployment.apps/backend configured
 For the new configurations to take effect, the `backend` service need to be restarted. Run the following two commands to force the restart:
 
 ```console
-kubectl scale deployment backend --replicas=0
-kubectl scale deployment backend --replicas=1
+$ kubectl scale deployment backend --replicas=0
+$ kubectl scale deployment backend --replicas=1
 ```
 
 
@@ -281,7 +281,7 @@ The output shows the decision made for each request. For example, a request to t
 }
 ```
 
-Note the presence of the `authorization` header containing the JWT. As explained in the [Rego Policy](#opa-policy) section, this JWT is decoded using the special-purpose code provided by OPA for dealing with JWTs and then the SPIFFE ID is extracted. As we already know, the SPIFFE ID for the `frontend` service matches the SPIFFE ID defined in the rego policy configured for the OPA Agent. Furthermore, request's path and method also match the rule so the `result` for the decision is `true` and the request is allowed to pass through the filter and reach the `backend` service.
+Note the presence of the `authorization` header containing the JWT. As explained in the [OPA Policy](#opa-policy) section, this JWT is decoded using the special-purpose code provided by OPA for dealing with JWTs and then the SPIFFE ID is extracted. As we already know, the SPIFFE ID for the `frontend` service matches the SPIFFE ID defined in the Rego policy configured for the OPA Agent. Furthermore, request's path and method also match the rule so the `result` for the decision is `true` and the request is allowed to pass through the filter and reach the `backend` service.
 
 ## Testing Invalid Requests
 
@@ -295,7 +295,7 @@ After trying to display the `frontend-2` data, you can verify the decision made 
 
 ## Retesting frontend-2 with a New Policy
 
-Let's update the rego policy to match the SPIFFE ID of the `frontend-2` service and test again. There is a Bash script that you can leverage to complete this task. Once executed, it will open the editor defined by your `KUBE_EDITOR`, or `EDITOR` environment variables, or fall back to 'vi' for Linux or 'notepad' for Windows.
+Let's update the Rego policy to match the SPIFFE ID of the `frontend-2` service and test again. There is a Bash script that you can leverage to complete this task. Once executed, it will open the editor defined by your `KUBE_EDITOR`, or `EDITOR` environment variables, or fall back to `vi` for Linux or Notepad for Windows.
 
 ```console
 $ bash scripts/backend-update-policy.sh
@@ -313,7 +313,7 @@ Update that line to match the SPIFFE ID for the `frontend-2` service:
 svc_spiffe_id == "spiffe://example.org/ns/default/sa/default/frontend-2"
 ```
 
-Save the changes and exit. The `backend-update-policy.sh` script resumes. The script applies new version of the ConfigMap and the restart the `backend` pod to pick up the new rule.
+Save the changes and exit. The `backend-update-policy.sh` script resumes. The script applies new version of the ConfigMap and then restarts the `backend` pod to pick up the new rule.
 Wait some seconds for the deployment to propagate before trying to view the `frontend-2` service in your browser again.
 Once the pod is ready, refresh the browser using the correct URL for the `frontend-2` service (e.g. `http://35.222.190.182:3002`). As a result, now the page shows the account details for user _Alex Fergus_.
 
@@ -329,7 +329,7 @@ On the other hand, if you now connect to the URL for the `frontend` service (e.g
 When you are finished, you can use the following commands to clean the environment created for the tutorial. It will remove:
 * All resources created for this SPIRE - Envoy JWT with OPA integration tutorial
 * All resources created for the SPIRE - Envoy JWT integration tutorial
-* All deployments and configurations for the SPIRE agent, SPIRE server, and namespace
+* All deployments and configurations for the SPIRE Agent, SPIRE Server, and namespace
 
 ```console
 $ bash scripts/clean-env.sh
