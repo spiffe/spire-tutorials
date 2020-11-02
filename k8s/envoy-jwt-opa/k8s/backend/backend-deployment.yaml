@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      hostPID: true
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: envoy
+        image: envoyproxy/envoy-alpine:v1.14.1
+        imagePullPolicy: IfNotPresent
+        args: ["-l", "debug", "--local-address-ip-version", "v4", "-c", "/run/envoy/envoy.yaml"]
+        ports:
+        - containerPort: 9001
+        volumeMounts:
+        - name: envoy-config
+          mountPath: "/run/envoy"
+          readOnly: true
+        - name: spire-agent-socket
+          mountPath: /run/spire/sockets
+          readOnly: true
+      - name: auth-helper
+        image: us.gcr.io/scytale-registry/envoy-jwt-auth-helper@sha256:e55ce5fd42f13c5475b285a848c5f83bc4a335a93d7f934d3ac884920045fc96
+        imagePullPolicy: IfNotPresent
+        args:  ["-config", "/run/envoy-jwt-auth-helper/config/envoy-jwt-auth-helper.conf"]
+        ports:
+        - containerPort: 9010
+        volumeMounts:
+        - name: envoy-jwt-auth-helper-config
+          mountPath: "/run/envoy-jwt-auth-helper/config"
+          readOnly: true
+        - name: spire-agent-socket
+          mountPath: /run/spire/sockets
+          readOnly: true
+      - name: backend
+        image: nginx
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: backend-balance-json-data
+          mountPath: "/usr/share/nginx/html/balances"
+          readOnly: true
+        - name: backend-profile-json-data
+          mountPath: "/usr/share/nginx/html/profiles"
+          readOnly: true
+        - name: backend-transactions-json-data
+          mountPath: "/usr/share/nginx/html/transactions"
+          readOnly: true
+      - name: opa
+        image: openpolicyagent/opa:latest-istio
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: opa-envoy
+            containerPort: 8182
+            protocol: TCP
+          - name: opa-api-port
+            containerPort: 8181
+            protocol: TCP
+        args:
+          - "run"
+          - "--server"
+          - "--config-file=/run/opa/opa-config.yaml"
+          - "/run/opa/opa-policy.rego"
+        volumeMounts:
+          - name: backend-opa-policy
+            mountPath: /run/opa
+            readOnly: true
+      volumes:
+      - name: envoy-config
+        configMap:
+          name: backend-envoy
+      - name: backend-opa-policy
+        configMap:
+          name: backend-opa-policy-config          
+      - name: spire-agent-socket
+        hostPath:
+          path: /run/spire/sockets
+          type: Directory
+      - name: envoy-jwt-auth-helper-config
+        configMap:
+            name: be-envoy-jwt-auth-helper-config
+      - name: backend-balance-json-data
+        configMap:
+          name: backend-balance-json-data
+      - name: backend-profile-json-data
+        configMap:
+          name: backend-profile-json-data
+      - name: backend-transactions-json-data
+        configMap:
+          name: backend-transactions-json-data
