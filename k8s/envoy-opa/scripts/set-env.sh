@@ -69,6 +69,6 @@ echo "${bb}Restarting backend pod...${nn}"
 restart_deployment > /dev/null
 
 echo "${bb}Waiting until deployments and Envoy are ready...${nn}"
-wait_for_envoy
+wait_for_envoy > /dev/null
 
 echo "${bb}Envoy OPA Environment creation completed.${nn}"
