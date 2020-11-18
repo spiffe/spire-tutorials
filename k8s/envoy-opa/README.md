@@ -51,7 +51,7 @@ The new container is added and configured as follows in [`backend-deployment.yam
 
 ```console
 - name: opa
-   image: openpolicyagent/opa:latest-istio
+   image: openpolicyagent/opa:0.24.0-envoy-5
    imagePullPolicy: Always
    ports:
       - name: opa-envoy
@@ -70,9 +70,9 @@ The new container is added and configured as follows in [`backend-deployment.yam
       mountPath: /run/opa
       readOnly: true
 ```
-One thing to note is the use of the `openpolicyagent/opa:latest-istio` image. This image is created by retagging the latest released image of OPA-Istio which extends OPA with a gRPC server that implements the Envoy External Authorization API so OPA can communicate policy decisions with Envoy.
+One thing to note is the use of the `openpolicyagent/opa:0.24.0-envoy-5` image. This image extends OPA with a gRPC server that implements the Envoy External Authorization API so OPA can communicate policy decisions with Envoy.
 
-The ConfigMap `backend-opa-policy` needs to be added into the `volumeMounts` section, like this:
+The ConfigMap `backend-opa-policy` needs to be added into the `volumes` section, like this:
 
 ```console
 - name: backend-opa-policy
@@ -300,7 +300,7 @@ The output shows the decision made for each request. For example, a request to t
 ```
 
 The OPA `result` decision is true in this case, meaning the request is allowed to pass through the filter and reach the `backend` service because all of the following conditions defined in the `opa-policy.rego` Rego policy are met:
-* The SPIFFE ID URI extracted from the `x-forwarded-client-cert` (XFCC) header matches the expected SPIFFE ID: `spiffe://example.org/ns/default/sa/default/backend`
+* The SPIFFE ID URI extracted from the `x-forwarded-client-cert` (XFCC) header matches the expected SPIFFE ID: `spiffe://example.org/ns/default/sa/default/frontend`
 * The request's path matches: `/profiles/2`
 * The HTTP method matches: `GET`
 
@@ -343,7 +343,7 @@ Once the pod is ready, refresh the browser using the correct URL for the `fronte
 
 [frontend-2-view]: images/frontend-2_view.png "Frontend-2 view"
 
-On the other hand, if you now connect to the URL for the `frontend` service (e.g. `http://35.222.164.221:3000`), the browser only displays the title without any account details. This is expected because the policy was updated and now the SPIFFE ID for the `frontend` service does not satisfy the policy anymore.
+On the other hand, if you now connect to the URL for the `frontend` service (e.g. `http://35.222.164.221:3000`), the browser only displays the title without any account details. This is the expected behaviour as the policy was updated and now the SPIFFE ID of the `frontend` service does not satisfy the policy anymore.
 
 # Cleanup
 

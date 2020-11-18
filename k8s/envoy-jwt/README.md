@@ -111,7 +111,7 @@ This new `auth-helper` service must be added as a sidecar and must be configured
     readOnly: true
 ```
 
-The `spire-agent-socket` volume is already defined for the deployment, no need to add it again. The configmap `envoy-jwt-auth-helper-config` needs to be added into the _volumes_ section, like this:
+The `spire-agent-socket` volume is already defined for the deployment, no need to add it again. The configmap `envoy-jwt-auth-helper-config` needs to be added into the `volumes` section, like this:
 
 ```console
 - name: envoy-jwt-auth-helper-config

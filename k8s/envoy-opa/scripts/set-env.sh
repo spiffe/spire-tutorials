@@ -20,7 +20,7 @@ restart_deployment() {
             echo "Waiting until backend pod is terminated..."
             continue
         fi
-        echo "Backend pod is terminated. Let's re-start is."
+        echo "Backend pod is terminated. Let's re-start it."
         POD_TERMINATED=1
         break
     done
@@ -69,6 +69,6 @@ echo "${bb}Restarting backend pod...${nn}"
 restart_deployment > /dev/null
 
 echo "${bb}Waiting until deployments and Envoy are ready...${nn}"
-wait_for_envoy > /dev/null
+wait_for_envoy
 
 echo "${bb}Envoy OPA Environment creation completed.${nn}"

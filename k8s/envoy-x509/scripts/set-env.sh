@@ -53,8 +53,8 @@ wait_for_envoy() {
     fi
 }
 
-#Creates Envoy-x509 scenario
-bash "${EXAMPLEDIR}"/scripts/pre-set-env.sh > /dev/null
+#Creates k8s Quickstart scenario
+bash "${EXAMPLEDIR}"/scripts/pre-set-env.sh
 
 echo "${bb}Applying SPIRE Envoy X509 configuration...${nn}"
 # Updates resources for the backend and frontend
