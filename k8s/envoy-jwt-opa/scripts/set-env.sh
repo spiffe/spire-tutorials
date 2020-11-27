@@ -37,14 +37,14 @@ wait_for_envoy() {
     kubectl rollout status deployment/backend --timeout=60s
 
     LOGLINE="all dependencies initialized. starting workers"
-    LOGLINE2="DNS hosts have changed for backend-envoy"
+    LOGLINE2="membership update for TLS cluster backend added 1 removed 1"
     for ((i=0;i<30;i++)); do
         if ! kubectl logs --tail=100 --selector=app=backend -c envoy | grep -qe "${LOGLINE}" ; then
             sleep 5
             echo "Waiting until backend envoy instance is ready..."
             continue
         fi
-        if ! kubectl logs --tail=30 --selector=app=frontend -c envoy | grep -qe "${LOGLINE2}" ; then
+        if ! kubectl logs --tail=10 --selector=app=frontend -c envoy | grep -qe "${LOGLINE2}" ; then
             sleep 5
             echo "Waiting until frontend envoy instance is in sync with the backend envoy..."
             continue
