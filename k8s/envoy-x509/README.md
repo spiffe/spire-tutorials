@@ -251,7 +251,7 @@ The `Symbank` demo application consumes three different endpoints to get all the
 
 To demonstrate an Envoy RBAC filter, we can create a policy that allows the `frontend` service to obtain only data from the `/profile` endpoint and deny requests sent to other endpoints. This is achieved by defining a policy with a principal that matches the SPIFFE ID of the service and the permissions to allow only GET requests to the `/profiles` resource.
 
-The following snippet can be added to the Envoy configuration for the `backend` service as a new HTTP filter to test the policy. _Note: In order to the envoy configuration to work properly, this snippet must be added just before the existing `envoy.router` filter_.
+The following snippet can be added to the Envoy configuration for the `backend` service as a new HTTP filter to test the policy. _Note: In order for the Envoy configuration to work properly, this snippet must be added just before the existing `envoy.router` filter_.
 
 
 ```console
