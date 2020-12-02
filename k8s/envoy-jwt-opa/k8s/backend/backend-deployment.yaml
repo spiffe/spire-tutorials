@@ -58,7 +58,7 @@ spec:
           mountPath: "/usr/share/nginx/html/transactions"
           readOnly: true
       - name: opa
-        image: openpolicyagent/opa:latest-istio
+        image: openpolicyagent/opa:0.24.0-envoy-5
         imagePullPolicy: IfNotPresent
         ports:
           - name: opa-envoy

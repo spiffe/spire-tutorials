@@ -20,7 +20,7 @@ restart_deployment() {
             echo "Waiting until backend pod is terminated..."
             continue
         fi
-        echo "Backend pod is terminated. Let's re-start is."
+        echo "Backend pod is terminated. Let's re-start it."
         POD_TERMINATED=1
         break
     done

@@ -50,12 +50,12 @@ The solution applied in this tutorial consists of adding a new External Authoriz
 ## Update Deployments
 
 In order to let OPA authorize or reject requests coming to the `backend` service it is necessary to add OPA as a sidecar to the deployment.
-We use the `openpolicyagent/opa:latest-istio` image which extends OPA with a gRPC server that implements the Envoy External Authorization API so OPA can communicate policy decisions with Envoy. The new container is added and configured as follows in [`backend-deployment.yaml`](k8s/backend/backend-deployment.yaml):
+We use the `openpolicyagent/opa:0.24.0-envoy-5` image which extends OPA with a gRPC server that implements the Envoy External Authorization API so OPA can communicate policy decisions with Envoy. The new container is added and configured as follows in [`backend-deployment.yaml`](k8s/backend/backend-deployment.yaml):
 
 
 ```console
 - name: opa
-  image: openpolicyagent/opa:latest-istio
+  image: openpolicyagent/opa:0.24.0-envoy-5
   imagePullPolicy: IfNotPresent
   ports:
     - name: opa-envoy
@@ -75,7 +75,7 @@ We use the `openpolicyagent/opa:latest-istio` image which extends OPA with a gRP
        readOnly: true
 ```
 
-The ConfigMap `backend-opa-policy` needs to be added into the `volumeMounts` section, like this:
+The ConfigMap `backend-opa-policy` needs to be added into the `volumes` section, like this:
 
 ```console
 - name: backend-opa-policy
@@ -321,7 +321,7 @@ Once the pod is ready, refresh the browser using the correct URL for the `fronte
 
 [frontend-2-view]: images/frontend-2_view.png "Frontend-2 view"
 
-On the other hand, if you now connect to the URL for the `frontend` service (e.g. `http://35.222.164.221:3000`), the browser only displays the title without any account details. This is expected because the policy was updated and now the SPIFFE ID for the `frontend` service does not satisfy the policy anymore.
+On the other hand, if you now connect to the URL for the `frontend` service (e.g. `http://35.222.164.221:3000`), the browser only displays the title without any account details. This is the expected behaviour as the policy was updated and now the SPIFFE ID of the `frontend` service does not satisfy the policy anymore.
 
 
 # Cleanup
