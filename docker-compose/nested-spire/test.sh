@@ -37,11 +37,11 @@ bash "${DIR}"/scripts/create-workload-registration-entries.sh > /dev/null
 
 log "checking nested JWT-SVID..."
 # Fetch JWT-SVID and extract token
-token=$(docker-compose exec -u 1001 -T nestedA-agent \
+token=$(docker-compose -f "${DIR}"/docker-compose.yaml exec -u 1001 -T nestedA-agent \
     /opt/spire/bin/spire-agent api fetch jwt -audience testIt -socketPath /opt/spire/sockets/workload_api.sock | sed -n '2p') || fail "JWT-SVID check failed"
 
 # Validate token
-validation_result=$(docker-compose exec -u 1001 -T nestedB-agent \
+validation_result=$(docker-compose -f "${DIR}"/docker-compose.yaml exec -u 1001 -T nestedB-agent \
     /opt/spire/bin/spire-agent api validate jwt -audience testIt  -svid "${token}" -socketPath /opt/spire/sockets/workload_api.sock)
 
 if echo $validation_result | grep -qe "SVID is valid."; then

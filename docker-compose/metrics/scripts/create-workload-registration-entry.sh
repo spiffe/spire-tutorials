@@ -2,6 +2,8 @@
 
 set -e
 
+PARENT_DIR="$(dirname "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )")"
+
 norm=$(tput sgr0) || true
 green=$(tput setaf 2) || true
 red=$(tput setaf 1) || true
@@ -27,7 +29,7 @@ check-entry-is-propagated() {
   # Wait one second between checks.
   log "Checking registration entry is propagated..."
   for ((i=1;i<=30;i++)); do
-      if docker-compose logs $1 | grep -qe "$2"; then
+      if docker-compose -f "${PARENT_DIR}"/docker-compose.yaml logs $1 | grep -qe "$2"; then
           log "${green}Entry is propagated.${nn}"
           return 0
       fi
@@ -41,9 +43,9 @@ check-entry-is-propagated() {
 
 # Workload for workload-A deployment
 log "creating workload-A workload registration entries..."
-docker-compose exec -T spire-server \
+docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T spire-server \
     /opt/spire/bin/spire-server entry create \
-    -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint spire/agent/agent.crt.pem)" \
+    -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint "${PARENT_DIR}"/spire/agent/agent.crt.pem)" \
     -spiffeID "spiffe://example.org/workload-A" \
     -selector "unix:uid:1001" \
     -ttl 120
