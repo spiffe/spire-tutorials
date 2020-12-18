@@ -1,4 +1,7 @@
 #!/bin/bash
+# This script runs the test.sh script in each subdirectory to test if each
+# tutorial is working properly. It is run by the Travis CI tool when a PR
+# is submitted or merged on GitHub, but you can also run it interactively.
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
