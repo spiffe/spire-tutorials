@@ -11,7 +11,7 @@ In this tutorial you will learn how to:
 
 # Prerequisites
 
-Required files for this tutorial can be found in the `metrics` directory in https://github.com/spiffe/spire-tutorials. If you didn't already clone the repository please do so now.
+Required files for this tutorial can be found in the `docker-compose/metrics` directory in https://github.com/spiffe/spire-tutorials. If you didn't already clone the repository please do so now.
 
 Before proceeding, review the following system requirements:
 - A 64-bit Linux or macOS environment
@@ -120,7 +120,7 @@ prometheus:
 
 Use the `set-env.sh` script to run all the services that make up the scenario. The script starts the SPIRE Server, SPIRE Agent, Graphite-StatsD and Prometheus services.
 
-Ensure that the current working directory is `.../spire-tutorials/metrics` and run:
+Ensure that the current working directory is `.../spire-tutorials/docker-compose/metrics/` and run:
 
 ```console
 $ bash scripts/set-env.sh

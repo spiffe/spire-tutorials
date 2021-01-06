@@ -274,7 +274,7 @@ Although not shown here, you could make the changes shown in the Web PKI authent
 
 ## Requirements
 
-Required files for this tutorial can be found in the `federation` directory in https://github.com/spiffe/spire-tutorials. If you didn't already clone the repository please do so now.
+Required files for this tutorial can be found in the `docker-compose/federation` directory in https://github.com/spiffe/spire-tutorials. If you didn't already clone the repository please do so now.
 
 Before proceeding, review the following system requirements:
 - A 64-bit Linux or macOS environment
@@ -283,7 +283,7 @@ Before proceeding, review the following system requirements:
 
 ## Build
 
-Ensure that the current working directory is `.../spire-tutorials/federation` and run the following command to create the files needed for Docker Compose:
+Ensure that the current working directory is `.../spire-tutorials/docker-compose/federation` and run the following command to create the files needed for Docker Compose:
 
 ```
 $ ./build.sh

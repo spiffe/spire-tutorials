@@ -22,7 +22,7 @@ In this tutorial you will learn how to:
 
 # Prerequisites
 
-Required files for this tutorial can be found in the `nested-spire` directory in https://github.com/spiffe/spire-tutorials. If you didn't already clone the repository please do so now.
+Required files for this tutorial can be found in the `docker-compose/nested-spire` directory in https://github.com/spiffe/spire-tutorials. If you didn't already clone the repository please do so now.
 
 Before proceeding, review the following system requirements:
 - A 64-bit Linux or macOS environment
@@ -36,19 +36,7 @@ This tutorial's `nested-spire` main directory contains three subdirectories, one
 
 ## Create a Shared Directory
 
-The first thing to do is to create a local directory that will be volume mounted on the services to share the Workload API between the root SPIRE Agent and its nested SPIRE Servers.
-
-Ensure that the current working directory is `.../spire-tutorials` and change to the directory `nested-spire` that contains the required files to complete the tutorial:
-
-```console
-    cd nested-spire
-```
-
-Create the `sharedRootSocket` shared directory:
-
-```console
-   mkdir sharedRootSocket
-```
+The first thing needed is a local directory that will be volume mounted on the services to share the Workload API between the root SPIRE Agent and its nested SPIRE Servers. This tutorial uses `.../spire-tutorials/docker-compose/nested-spire/sharedRootSocket` as the shared directory.
 
 ## Configuring Root SPIRE Deployment
 
@@ -136,7 +124,7 @@ The other point to highlight is the `-downstream` option. This option, when set,
 
 Use the `set-env.sh` script to run all the services that make up the scenario. The script starts the `root`, `nestedA`, and `nestedB` services with the configuration options described earlier.
 
-Ensure that the current working directory is `.../spire-tutorials/nested-spire` and run:
+Ensure that the current working directory is `.../spire-tutorials/docker-compose/nested-spire` and run:
 
 ```console
     bash scripts/set-env.sh

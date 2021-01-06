@@ -28,6 +28,7 @@ before_script:
 
 script:
   - ./k8s/test-all.sh
+  - ./docker-compose/test-all.sh
 
 notifications:
     slack:

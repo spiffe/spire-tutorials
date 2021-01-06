@@ -15,12 +15,6 @@ fail() {
 	exit 1
 }
 
-echo "${bold}Checking for kubectl...${norm}"
-command -v kubectl > /dev/null || fail "kubectl is required."
-
-echo "${bold}Checking minikube status...${norm}"
-minikube status || fail "minikube isn't running"
-
 echo "${bold}Running all tests...${norm}"
 for testdir in "${DIR}"/*; do
 	if [[ -x "${testdir}/test.sh" ]]; then
@@ -39,3 +33,4 @@ if [ -n "${FAILED}" ]; then
 	fail "There were test failures"
 fi
 echo "${green}Done. All test passed!${norm}"
+exit 0
