@@ -42,6 +42,14 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 60
             timeoutSeconds: 3
+          readinessProbe:
+            exec:
+              command:
+                - /opt/spire/bin/spire-server
+                - healthcheck
+                - --shallow
+            initialDelaySeconds: 5
+            periodSeconds: 5
       volumes:
         - name: spire-config
           configMap:
