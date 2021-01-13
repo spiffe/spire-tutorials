@@ -21,7 +21,7 @@ spec:
       shareProcessNamespace: true
       containers:
         - name: spire-server
-          image: gcr.io/spiffe-io/spire-server:0.10.0
+          image: gcr.io/spiffe-io/spire-server:0.11.0
           args:
             - -config
             - /run/spire/config/server.conf
@@ -44,8 +44,13 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 60
             timeoutSeconds: 3
+          readinessProbe:
+            exec:
+              command: ["/opt/spire/bin/spire-server", "healthcheck", "-registrationUDSPath", "/run/spire/sockets/registration.sock", "--shallow"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
         - name: spire-oidc
-          image: gcr.io/spiffe-io/oidc-discovery-provider:0.10.0
+          image: gcr.io/spiffe-io/oidc-discovery-provider:0.11.0
           args:
           - -config
           - /run/spire/oidc/config/oidc-discovery-provider.conf
