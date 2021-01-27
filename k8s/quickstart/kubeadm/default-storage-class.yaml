@@ -1,0 +1,14 @@
+# This resource is intended to be applied only if you use Kubeadm to run the quickstart,
+# see spiffe.io/docs/latest/spire/installing/getting-started-k8s/#considerations-when-using-kubeadm
+
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  namespace: kube-system
+  name: standard
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+
+provisioner: k8s.io/minikube-hostpath

@@ -1,0 +1,102 @@
+# These resources are intended to be applied only if you use Kubeadm to run the quickstart,
+# see spiffe.io/docs/latest/spire/installing/getting-started-k8s/#considerations-when-using-kubeadm
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: storage-provisioner
+  namespace: kube-system
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: storage-provisioner
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:persistent-volume-provisioner
+subjects:
+  - kind: ServiceAccount
+    name: storage-provisioner
+    namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: system:persistent-volume-provisioner
+  namespace: kube-system
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - watch
+  - create
+- apiGroups:
+  - ""
+  resourceNames:
+  - k8s.io-minikube-hostpath
+  resources:
+  - endpoints
+  verbs:
+  - get
+  - update
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: system:persistent-volume-provisioner
+  namespace: kube-system
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: system:persistent-volume-provisioner
+subjects:
+  - kind: ServiceAccount
+    name: storage-provisioner
+    namespace: kube-system
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: k8s.io-minikube-hostpath
+  namespace: kube-system
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: storage-provisioner
+  namespace: kube-system
+  labels:
+    integration-test: storage-provisioner
+    addonmanager.kubernetes.io/mode: Reconcile
+spec:
+  serviceAccountName: storage-provisioner
+  hostNetwork: true
+  containers:
+  - name: storage-provisioner
+    image: gcr.io/k8s-minikube/storage-provisioner:v3
+    command: ["/storage-provisioner"]
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+    - mountPath: /tmp
+      name: tmp
+  volumes:
+  - name: tmp
+    hostPath:
+      path: /tmp
+      type: Directory
