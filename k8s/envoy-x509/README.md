@@ -1,7 +1,7 @@
 
 # Configure Envoy to Perform X.509 SVID Authentication
 
-This tutorial builds on the [Kubernetes Quickstart Tutorial](../quickstart/) to demonstrate how to configure SPIRE to provide service identity dynamically in the form of X.509 certificates that will be consumed by Envoy secret discovery service (SDS). The changes required to implement X.509 SVID authentication are shown here as a delta to that tutorial, so you should run, or at least read through, the Kubernetes Quickstart Tutorial first.
+This tutorial builds on the [Kubernetes Quickstart Tutorial](https://spiffe.io/docs/latest/try/getting-started-k8s/) to demonstrate how to configure SPIRE to provide service identity dynamically in the form of X.509 certificates that will be consumed by Envoy secret discovery service (SDS). The changes required to implement X.509 SVID authentication are shown here as a delta to that tutorial, so you should run, or at least read through, the Kubernetes Quickstart Tutorial first.
 
 To illustrate X.509 authentication, we create a simple scenario with three services. One service will be the backend that is a simple nginx instance serving static data. On the other side, we run two instances of the `Symbank` demo banking application acting as the frontend services. The `Symbank` frontend services send HTTP requests to the nginx backend to get the user account details.
 
@@ -24,7 +24,7 @@ In this tutorial you will learn how to:
 
 Before proceeding, review the following:
 
-* You'll need access to the Kubernetes environment configured when going through the [Kubernetes Quickstart Tutorial](../quickstart/). Optionally, you can create the Kubernetes environment with the `pre-set-env.sh` script described just below. The Kubernetes environment must be able to expose an Ingress to the public internet. _Note: This is generally not true for local Kubernetes environments such as Minikube._
+* You'll need access to the Kubernetes environment configured when going through the [Kubernetes Quickstart Tutorial](https://spiffe.io/docs/latest/try/getting-started-k8s/). Optionally, you can create the Kubernetes environment with the `pre-set-env.sh` script described just below. The Kubernetes environment must be able to expose an Ingress to the public internet. _Note: This is generally not true for local Kubernetes environments such as Minikube._
 * Required YAML files for this tutorial can be found in the `k8s/envoy-x509` directory in https://github.com/spiffe/spire-tutorials. If you didn't already clone the repo for the _Kubernetes Quickstart Tutorial_ please do so now.
 
 If the _Kubernetes Quickstart Tutorial_ environment is not available, you can use the following script to create it and use it as starting point for this tutorial. From the `k8s/envoy-x509` directory, run the following command:
@@ -137,7 +137,7 @@ In order to get X.509 certificates issued by SPIRE, the services must be registe
 $ bash create-registration-entries.sh
 ```
 
-Once the script is run, the list of created registration entries will be shown. The output will show other registration entries created by the [Kubernetes Quickstart Tutorial](../quickstart/). The important ones here are the three new entries belonging to each of our workloads:
+Once the script is run, the list of created registration entries will be shown. The output will show other registration entries created by the [Kubernetes Quickstart Tutorial](https://spiffe.io/docs/latest/try/getting-started-k8s/). The important ones here are the three new entries belonging to each of our workloads:
 
 ```console
 ...
