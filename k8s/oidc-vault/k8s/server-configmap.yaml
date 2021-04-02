@@ -15,13 +15,13 @@ data:
       experimental {
         // Turns on the bundle endpoint (required, true)
         bundle_endpoint_enabled = true
- 
+
         // The address to listen on (optional, defaults to 0.0.0.0)
         // bundle_endpoint_address = "0.0.0.0"
- 
+
         // The port to listen on (optional, defaults to 443)
         bundle_endpoint_port = 8443
-      } 
+      }
       ca_key_type = "rsa-2048"
 
       # Creates the iss claim in JWT-SVIDs.
@@ -70,4 +70,12 @@ data:
         plugin_data {
         }
       }
+    }
+
+    health_checks {
+      listener_enabled = true
+      bind_address = "0.0.0.0"
+      bind_port = "8080"
+      live_path = "/live"
+      ready_path = "/ready"
     }
