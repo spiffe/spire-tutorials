@@ -34,20 +34,17 @@ spec:
               mountPath: /run/spire/data
               readOnly: false
           livenessProbe:
-            exec:
-              command:
-                - /opt/spire/bin/spire-server
-                - healthcheck
+            httpGet:
+              path: /live
+              port: 8080
             failureThreshold: 2
             initialDelaySeconds: 15
             periodSeconds: 60
             timeoutSeconds: 3
           readinessProbe:
-            exec:
-              command:
-                - /opt/spire/bin/spire-server
-                - healthcheck
-                - --shallow
+            httpGet:
+              path: /ready
+              port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
       volumes:
