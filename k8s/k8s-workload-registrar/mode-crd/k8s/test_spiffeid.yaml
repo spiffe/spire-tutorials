@@ -1,0 +1,11 @@
+apiVersion: spiffeid.spiffe.io/v1beta1
+kind: SpiffeID
+metadata:
+  name: my-test-spiffeid
+  namespace: spire
+spec:
+  parentId: spiffe://example.org/spire/server
+  selector:
+    namespace: spire
+    podName: my-test-pod
+  spiffeId: spiffe://example.org/test

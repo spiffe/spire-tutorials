@@ -1,19 +1,29 @@
 # Configure SPIRE to use the Kubernetes Workload Registrar
-This tutorial builds on the [Kubernetes Quickstart Tutorial](../quickstart/) and provides an example of how to configure SPIRE to use the Kubernetes Workload Registrar as a container within the SPIRE Server pod. With this tool, automatic workload registration and management is added to SPIRE. The changes required to deploy the registrar and the necessary files are shown as a delta to the quickstart tutorial, so it is highly encouraged to execute, or at least read through, the Kubernetes Quickstart Tutorial first.
+ This tutorial builds on the [Kubernetes Quickstart Tutorial](../quickstart/) to provide an example of how to configure the SPIRE Kubernetes Workload Registrar as a container within the SPIRE Server pod. The registrar enables automatic workload registration and management in SPIRE Kubernetes implementations. The changes required to deploy the registrar and the necessary files are shown as a delta to the quickstart tutorial, so it is highly encouraged to execute, or at least read through, the Kubernetes Quickstart Tutorial first.
+
+This tutorial demonstrates how to use the registrar's three different modes:
+
+ * Webhook - For historical reasons, the webhook mode is the default but reconcile and CRD modes are now preferred because webhook can create StatefulSets and pods with no entries and cause other cleanup and scalability issues.
+ * Reconcile - The reconcile mode uses reconciling controllers rather than webhooks. It may may be slightly faster to create new entries than CRD mode and requires less configuration.
+ * CRD - The CRD mode provides a namespaced SpiffeID custom resource and is best for cases where you plan to manage SpiffeID custom resources directly.
+
+See the [Differences between modes](https://github.com/spiffe/spire/tree/master/support/k8s/k8s-workload-registrar#differences-between-modes) section of the GitHub README for more information.
 
 In this document you will learn how to:
-* Deploy the K8s Workload Registrar as a container within the SPIRE Server Pod
-* Configure the 3 available modes and their differences 
-* Use the 3 available workload registration modes
-* Test successful registration entries creation
+ * Deploy the K8s Workload Registrar as a container within the SPIRE Server Pod
+ * Configure the three workload registration modes
+ * Use the three workload registration modes
+ * Test successful registration entries creation
 
-# Prerequisites
-Before proceeding, review the following list:
-* You'll need access to the Kubernetes environment configured when going through the [Kubernetes Quickstart Tutorial](../quickstart/).
-* Required configuration files for this tutorial can be found in the `k8s/k8s-workload-registrar` directory in https://github.com/spiffe/spire-tutorials. If you didn't already clone the repo for the _Kubernetes Quickstart Tutorial_, please do so now.
-* The steps in this document should work with Kubernetes version 1.20.2.
+For documentation about SPIRE Kubernetes Workload Registrar configuration options, see the [GitHub README](https://github.com/spiffe/spire/tree/master/support/k8s/k8s-workload-registrar).
 
-We will deploy an scenario that consists of a statefulset containing a SPIRE Server and the Kubernetes Workload Registrar, a SPIRE Agent, and a workload, and configure the different modes to illustrate the automatic registration entries creation.
+ # Prerequisites
+ Before proceeding, review the following list:
+ * You'll need access to the Kubernetes environment configured when going through the [Kubernetes Quickstart Tutorial](../quickstart/).
+ * Required configuration files for this tutorial can be found in the `k8s/k8s-workload-registrar` directory in [https://github.com/spiffe/spire-tutorials](https://github.com/spiffe/spire-tutorials). If you didn't already clone the repo for the _Kubernetes Quickstart Tutorial_, please do so now.
+ * The steps in this document should work with Kubernetes version 1.20.2.
+
+We will deploy an scenario that consists of a StatefulSet containing a SPIRE Server and the Kubernetes Workload Registrar, a SPIRE Agent, and a workload, and configure the different modes to illustrate the automatic registration entries creation.
 
 # Common configuration
 
@@ -119,13 +129,13 @@ metadata:
   namespace: spire
 data:
   k8s-workload-registrar.conf: |
+    trust_domain = "example.org"
+    server_socket_path = "/tmp/spire-server/private/api.sock"
+    cluster = "example-cluster"
+    mode = "webhook"
     cert_path = "/run/spire/k8s-workload-registrar/certs/server-cert.pem"
     key_path = "/run/spire/k8s-workload-registrar/secret/server-key.pem"
     cacert_path = "/run/spire/k8s-workload-registrar/certs/cacert.pem"
-    trust_domain = "example.org"
-    cluster = "k8stest"
-    server_socket_path = "/tmp/spire-server/private/api.sock"
-    insecure_skip_client_verification = false
 ``` 
 
 As we can see, the `key_path` points to where the secret containing the server key is mounted, which was shown earlier. The `cert_path` and `cacert_path` points to the directory where the `ConfigMap` with the PEM encoded certificates for the server and for the CA are mounted. When the webhook is triggered, the registrar acts as the server and validates the identity of the client, which is the Kubernetes API server in this case. We can disable this authentication by setting the ```insecure_skip_client_verification``` option to `true` (though it is not recommended).
@@ -155,25 +165,49 @@ plugins:
     kubeConfigFile: /etc/kubernetes/pki/admctrl/kubeconfig.yaml
 ```
 
-We have looked at the key points of the webhook mode's configuration, so let's apply the necessary files to set our scenario with a SPIRE Server with the registrar container in it, an Agent, and a workload, by issuing the following command:
+We have looked at the key points of the webhook mode's configuration, so let's apply the necessary files to set our scenario with a SPIRE Server with the registrar container in it, an Agent, and a workload, by issuing the following command in the `mode-webhook` directory:
 
 ```console
-$ insert command to deploy the scenario for the webhook mode
+$ bash scripts/deploy-scenario.sh
 ```
 
 This is all we need to have the registration entries created on the server. We will start a shell into the SPIRE Server container and run the entry show directive by executing the command below:
 
 ```console
-$ insert command to see registration entries
+$ kubectl exec -it deployment/spire-server -n spire -c spire-server -- /bin/sh -c "bin/spire-server entry show -registrationUDSPath /tmp/spire-server/private/api.sock"
 ```
 
 You should see the following 3 registration entries, corresponding to the node, the agent, and the workload.
 
-***insert reg entries*** 
+```console
+Found 3 entries
+Entry ID         : ...
+SPIFFE ID        : spiffe://example.org/k8s-workload-registrar/example-cluster/node
+Parent ID        : spiffe://example.org/spire/server
+Revision         : 0
+TTL              : default
+Selector         : k8s_psat:cluster:example-cluster
 
-Let's see how are they built:
+Entry ID         : ...
+SPIFFE ID        : spiffe://example.org/ns/spire/sa/spire-agent
+Parent ID        : spiffe://example.org/k8s-workload-registrar/example-cluster/node
+Revision         : 0
+TTL              : default
+Selector         : k8s:ns:spire
+Selector         : k8s:pod-name:spire-agent-wtx7b
 
-The cluster name is used as Parent ID, and there is no reference to the node that the pod belongs to, this is, all the registration entries are mapped to a single node entry inside the cluster. This represents a drawback for this mode, as all the nodes in the cluster have permission to get identities for all the workloads that belong to the Kubernetes cluster, which increases the blast ratio in case of a node being compromised, among other disadvantages.
+Entry ID         : ...
+SPIFFE ID        : spiffe://example.org/ns/spire/sa/default
+Parent ID        : spiffe://example.org/k8s-workload-registrar/example-cluster/node
+Revision         : 0
+TTL              : default
+Selector         : k8s:ns:spire
+Selector         : k8s:pod-name:example-workload-6877cd47d5-2fmpq
+```
+
+We omitted the entry ids, as it may change with every run. Let's see how the other fields are built:
+
+The cluster name *example-cluster* is used as Parent ID in all the entries, and there is no reference to the node that the pods belong to, this is, all the registration entries are mapped to a single node entry inside the cluster. This represents a drawback for this mode, as all the nodes in the cluster have permission to get identities for all the workloads that belong to the Kubernetes cluster, which increases the blast radius in case of a node being compromised, among other disadvantages.
 
 Taking a look on the assigned SPIFFE IDs for the agent and the workload, we can see that they have the following form:
 *spiffe://\<TRUSTDOMAIN\>/ns/\<NAMESPACE\>/sa/\<SERVICEACCOUNT\>*.
@@ -181,42 +215,61 @@ From this, we can conclude that we are using the registrar configured with the S
 
 Another thing that is worth looking, is the registrar log, in which we will found out if the entries were created by this container. Run the following command to get the logs of the registrar, and to look for the *Created pod entry* keyword. 
 
-***insert command to get the logs and grep over the desired keyword***
+```console
+kubectl logs deployment/spire-server -n spire -c k8s-workload-registrar | grep "Created pod entry"
+```
 
-The result should be similar to the one shown below:
-
-***insert output of the command above***
-
-We can check that the 3 entries that were present on the SPIRE Server were created by the registrar, and correspond to the node, agent, and workload, in that specific order.
+From the output of this command, we can conclude that the 3 entries that were present on the SPIRE Server were created by the registrar, and correspond to the node, agent, and workload, in that specific order.
 
 ## Pod deletion
 
 Let's see how the registrar handles a pod deletion, and which impact does it have on the registration entries. Run the following command to delete the workload deployment: 
 
 ```console
-$ insert command to delete workload pod
+$ kubectl delete deployment/example-workload -n spire
 ```
+
 Again, check for the registration entries with the command below:
 
 ```console 
-$ insert command to see registration entries
+$ kubectl exec -it deployment/spire-server -n spire -c spire-server -- /bin/sh -c "bin/spire-server entry show -registrationUDSPath /tmp/spire-server/private/api.sock"
 ```
 
-The output of the command will not include the registration entry that correspond to the workload, because the pod was deleted, and should be similar to this:
+The output of the command will not include the registration entry that correspond to the workload, because the pod was deleted, and should be similar to:
 
-***insert reg entries*** 
+```console
+Found 2 entries
+Entry ID         : ...
+SPIFFE ID        : spiffe://example.org/k8s-workload-registrar/example-cluster/node
+Parent ID        : spiffe://example.org/spire/server
+Revision         : 0
+TTL              : default
+Selector         : k8s_psat:cluster:example-cluster
+
+Entry ID         : ...
+SPIFFE ID        : spiffe://example.org/ns/spire/sa/spire-agent
+Parent ID        : spiffe://example.org/k8s-workload-registrar/example-cluster/node
+Revision         : 0
+TTL              : default
+Selector         : k8s:ns:spire
+Selector         : k8s:pod-name:spire-agent-wtx7b
+```
 
 As the pod was deleted, we will check the registrar logs, looking for the "Deleted pod entry" keyword, with the command shown below:
 
 ```console 
-$ insert command to get the logs and grep over the desired keyword
+$ kubectl logs deployment/spire-server -n spire -c k8s-workload-registrar | grep "Deleting pod entries"
 ```
 
-The output should be similar to:
+From which we can conclude that the registrar successfuly deleted the corresponding entry of the *example-workload* pod.
 
-***insert output of the command above***
+## Teardown
 
-From which we can conclude that the registrar successfuly deleted the corresponding entry of the recently deleted pod.
+To delete the resources used for this mode, we will delete the cluster by executing:
+
+```console
+kind delete cluster --name example-cluster
+```
 
 # Reconcile mode
 
@@ -232,31 +285,56 @@ metadata:
   namespace: spire
 data:
   k8s-workload-registrar.conf: |
-    mode = "reconcile"
     trust_domain = "example.org"
-    cluster = "k8stest"
     server_socket_path = "/tmp/spire-server/private/api.sock"
-    metrics_addr = "0"
+    cluster = "example-cluster"
+    mode = "reconcile"
     pod_label = "spire-workload"
+    metrics_addr = "0"
 ```
 
 We are explicitly indicating that *reconcile* mode is used. For the sake of the tutorial, we will be using Label Based workload registration for this mode (as we can see from the `pod_label` configurable), though every workload registration mode can be used with every registrar mode. This is all the configuration that is needed to have the containers working properly.
 
-We will deploy the same scenario as the previous mode, with the difference on the agent and workload pods: they will be labeled with the *spire-workload* label, that corresponds to the value indicated in the `pod_label` option of the `ConfigMap` shown above. Run the following command to set the scenario:
+We will deploy the same scenario as the previous mode, with the difference on the agent and workload pods: they will be labeled with the *spire-workload* label, that corresponds to the value indicated in the `pod_label` option of the `ConfigMap` shown above. Ensure that your working directory is `mode-reconcile` and run the following command to set the scenario:
 
 ```console
-$ insert command to deploy the scenario for the reconcile mode
+$ bash scripts/deploy-scenario.sh
 ```
 
 With the Reconcile scenario set, we will check the registration entries and some special considerations for this mode. Let's issue the command below to start a shell into the SPIRE Server container, and to show the existing registration entries.
 
 ```console
-$ insert command to see registration entries
+$ kubectl exec -it deployment/spire-server -n spire -c spire-server -- /bin/sh -c "bin/spire-server entry show -registrationUDSPath /tmp/spire-server/private/api.sock"
 ```
 
 Your output should similar to the following, and shows the entries for the node, the agent and the workload:
 
-***insert reg entries***
+```console
+Entry ID         : 84bb478d-2ec7-448c-86f6-51c8970c60ab
+SPIFFE ID        : spiffe://example.org/spire-k8s-registrar/example-cluster/node/example-cluster-control-plane
+Parent ID        : spiffe://example.org/spire/server
+Revision         : 0
+TTL              : default
+Selector         : k8s_psat:agent_node_name:example-cluster-control-plane
+Selector         : k8s_psat:cluster:example-cluster
+
+Found 3 entries
+Entry ID         : 5ea1a895-d144-49fe-9d58-bbc7ad903bee
+SPIFFE ID        : spiffe://example.org/agent
+Parent ID        : spiffe://example.org/spire-k8s-registrar/example-cluster/node/example-cluster-control-plane
+Revision         : 0
+TTL              : default
+Selector         : k8s:ns:spire
+Selector         : k8s:pod-name:spire-agent-c5c5f
+
+Entry ID         : f9606cee-0773-4228-8440-ea2bac9ca3ed
+SPIFFE ID        : spiffe://example.org/example-workload
+Parent ID        : spiffe://example.org/spire-k8s-registrar/example-cluster/node/example-cluster-control-plane
+Revision         : 0
+TTL              : default
+Selector         : k8s:ns:spire
+Selector         : k8s:pod-name:example-workload-b98cc787d-kzxz6
+```
 
 If we compare this entries to the Webhook mode ones, the difference is that the Parent ID of the SVID contains a reference to the node name where the pod is scheduled on. We mentioned that this is not happening using the Webhook node, and this was one of its principal drawbacks. Also, for the node registration entry (the one that has the SPIRE Server SPIFFE ID as the Parent ID), node name is used in the selectors, along with the cluster name. For the remaining two entries, pod name and namespace are used in the selectors instead.
 
@@ -265,64 +343,77 @@ As we are using Label workload registration mode, the SPIFFE ID's for the agent 
 Let's check if the registrar indeed created the registration entries, by checking its logs, and looking for the *Created new spire entry* keyword. Run the command that is shown below:
 
 ```console
-$ insert command to see the registrar logs
+$ kubectl logs deployment/spire-server -n spire -c k8s-workload-registrar | grep "Created new spire entry"
 ```
 
-The output will be similar to this:
-
-***insert output of show logs command***
-
-We mentioned before that there were two reconciling controllers, and we are seeing now that the node controller created the entry for the single node in the cluster, and that the pod controller created the entries for the two labeled pods: agent and workload.
+We mentioned before that there were two reconciling controllers, and from the output of the command above, we can see that the node controller created the entry for the single node in the cluster, and that the pod controller created the entries for the two labeled pods: agent and workload.
 
 ## Pod deletion
 
 The Kubernetes Workload Registrar automatically handles the creation and deletion of registration entries. We already see how the entries are created, and now we will test its deletion. Let's delete the workload deployment: 
 
 ```console
-$ insert command to delete workload deployment
+$ kubectl delete deployment/example-workload -n spire
 ```
 
 We will check if its corresponding entry is deleted too. Run the following command to see the registration entries on the SPIRE Server:
 
 ```console
-$ insert command to see registration entries
+$ kubectl exec -it deployment/spire-server -n spire -c spire-server -- /bin/sh -c "bin/spire-server entry show -registrationUDSPath /tmp/spire-server/private/api.sock"
 ```
 
 The output will only show two registration entries, because the workload entry was deleted by the registrar:
 
-***insert reg entries***
+```console
+Found 2 entries
+Entry ID         : 5ea1a895-d144-49fe-9d58-bbc7ad903bee
+SPIFFE ID        : spiffe://example.org/agent
+Parent ID        : spiffe://example.org/spire-k8s-registrar/example-cluster/node/example-cluster-control-plane
+Revision         : 0
+TTL              : default
+Selector         : k8s:ns:spire
+Selector         : k8s:pod-name:spire-agent-c5c5f
+
+Entry ID         : 84bb478d-2ec7-448c-86f6-51c8970c60ab
+SPIFFE ID        : spiffe://example.org/spire-k8s-registrar/example-cluster/node/example-cluster-control-plane
+Parent ID        : spiffe://example.org/spire/server
+Revision         : 0
+TTL              : default
+Selector         : k8s_psat:agent_node_name:example-cluster-control-plane
+Selector         : k8s_psat:cluster:example-cluster
+```
 
 If we look for the *Deleted entry* keyword on the registrar logs, we will find out that the registrar deleted the entry. Issue the following command:
 
 ```console
-$ insert command to see registrar logs
+$ kubectl logs deployment/spire-server -n spire -c k8s-workload-registrar | grep "Deleted entry"
 ```
 
-The output should be similar to: 
-
-***insert output of above command***
-
-The registrar successfuly deleted the entry.
+The pod controller successfuly deleted the entry.
 
 ## Non-labeled pods
 
-As we are using Label Based workload registration, only pods that have the label *spire-workload* will have its registration entry automatically created. Let's deploy a pod that has no label with the command below:
+As we are using Label Based workload registration, only pods that have the *spire-workload* label will have its registration entry automatically created. Let's deploy a pod that has no label with the command below, by executing the comand below, from the `mode-reconcile` directory:
 
 ```console
-$ insert command to deploy a non-labeled workload
+$ kubectl apply -f k8s/not-labeled-workload.yaml
 ```
 
 Let's see the existing registration entries with the command:
 
 ```console
-$ insert command to see registration entries
+$ kubectl exec -it deployment/spire-server -n spire -c spire-server -- /bin/sh -c "bin/spire-server entry show -registrationUDSPath /tmp/spire-server/private/api.sock"
 ```
 
-It's output should be similar to: 
+The output should remain constant, compared to the one that we obtained in the *Pod deletion* section. This is, the only two registration entries on the SPIRE Server corresponds to the labeled deployed resources. This is the expected behaviour, as only labeled pods will be considered by the workload registrar while using the Label Workload registration mode.
 
-***insert reg entries***
+## Teardown
 
-We see that the entries are the same as before, and that no entry has been created for the new workload. This is the expected behaviour, as only labeled pods will be considered by the workload registrar while using the Label Workload registration mode.
+To delete the resources used for this mode, we will delete the cluster by executing:
+
+```console
+kind delete cluster --name example-cluster
+```
 
 # CRD mode
 
@@ -356,7 +447,7 @@ data:
   k8s-workload-registrar.conf: |
     trust_domain = "example.org"
     server_socket_path = "/tmp/spire-server/private/api.sock"
-    cluster = "k8stest"
+    cluster = "example-cluster"
     mode = "crd"
     pod_annotation = "spiffe.io/spiffe-id"
 ```
@@ -364,18 +455,47 @@ data:
 Let's deploy the necessary files, including the base scenario plus the SPIFFE ID CRD definition, and examine the automatically created registration entries.
 
 ```console
-$ insert command to deploy the crd mode scenario
+$ bash scripts/deploy-scenario.sh
 ```
 
 Start a shell into the SPIRE Server and run the entry show command by executing:
 
 ```console
-$ insert command to see registration entries
+$ kubectl exec -it deployment/spire-server -n spire -c spire-server -- /bin/sh -c "bin/spire-server entry show -registrationUDSPath /tmp/spire-server/private/api.sock"
 ```
 
 The output should show the following registration entries:
 
-***insert reg entries***
+```console
+Found 3 entries
+Entry ID         : cc0e9405-939d-4b45-96d7-e160c89cf6f5
+SPIFFE ID        : spiffe://example.org/k8s-workload-registrar/example-cluster/node/example-cluster-control-plane
+Parent ID        : spiffe://example.org/spire/server
+Revision         : 1
+TTL              : default
+Selector         : k8s_psat:agent_node_uid:08990bfd-3551-4761-8a1b-2e652984ffdd
+Selector         : k8s_psat:cluster:example-cluster
+
+Entry ID         : b9b3b92b-06a2-4619-8fca-31ed1ea0138d
+SPIFFE ID        : spiffe://example.org/testing/agent
+Parent ID        : spiffe://example.org/k8s-workload-registrar/example-cluster/node/example-cluster-control-plane
+Revision         : 1
+TTL              : default
+Selector         : k8s:node-name:example-cluster-control-plane
+Selector         : k8s:ns:spire
+Selector         : k8s:pod-uid:538886bb-48e1-4795-b386-10e97f50e34f
+DNS name         : spire-agent-jzc8w
+
+Entry ID         : 561cc364-35fd-426e-9de6-e5db0605d1a1
+SPIFFE ID        : spiffe://example.org/testing/example-workload
+Parent ID        : spiffe://example.org/k8s-workload-registrar/example-cluster/node/example-cluster-control-plane
+Revision         : 1
+TTL              : default
+Selector         : k8s:node-name:example-cluster-control-plane
+Selector         : k8s:ns:spire
+Selector         : k8s:pod-uid:78ed3fc5-4cff-476a-90f5-37d3abd47823
+DNS name         : example-workload-6877cd47d5-l4hv5
+```
 
 3 entries were created corresponding to the node, agent, and workload. For the node entry (the one that has the SPIRE Server SPIFFE ID as Parent ID), we see a difference in the selectors, comparing it with the selectors in the node entry created using Reconcile mode: we find out that instead of placing the node name, CRD mode stores the UID of the node where the agent is running on. As the node name is used in the SPIFFE ID assigned to the node, we can take this as a mapping from node UID to node name.
 
@@ -388,33 +508,52 @@ If we now focus our attention on the SPIFFE IDs assigned to the workloads, we se
 As in the previous modes, if we delete the workload deployment, we will see that its corresponding registration entry will be deleted too. Let's run the command to delete the workload pod: 
 
 ```console
-$ insert command to delete workload deployment
+$ kubectl delete deployment/example-workload -n spire
 ```
 
 And now, check the registration entries in the SPIRE Server by executing:
 
 ```console
-insert command to see registration entries
+$ kubectl exec -it statefulset/spire-server -n spire -c spire-server -- /bin/sh -c "bin/spire-server entry show -registrationUDSPath /tmp/spire-server/private/api.sock"
 ```
 
 The output should look like:
 
-***insert registration entries***
+```console
+Found 2 entries
+Entry ID         : cc0e9405-939d-4b45-96d7-e160c89cf6f5
+SPIFFE ID        : spiffe://example.org/k8s-workload-registrar/example-cluster/node/example-cluster-control-plane
+Parent ID        : spiffe://example.org/spire/server
+Revision         : 1
+TTL              : default
+Selector         : k8s_psat:agent_node_uid:08990bfd-3551-4761-8a1b-2e652984ffdd
+Selector         : k8s_psat:cluster:example-cluster
+
+Entry ID         : b9b3b92b-06a2-4619-8fca-31ed1ea0138d
+SPIFFE ID        : spiffe://example.org/testing/agent
+Parent ID        : spiffe://example.org/k8s-workload-registrar/example-cluster/node/example-cluster-control-plane
+Revision         : 1
+TTL              : default
+Selector         : k8s:node-name:example-cluster-control-plane
+Selector         : k8s:ns:spire
+Selector         : k8s:pod-uid:538886bb-48e1-4795-b386-10e97f50e34f
+DNS name         : spire-agent-jzc8w
+```
 
 The only entries that should exist now are the ones that match the node and the SPIRE agent, because the workload one was deleted by the registrar.
 
 ## Non-annotated pods
 
-Let's check if a pod that has no annotations its considered by the registrar. Deploy a new workload with this condition with the following command:
+Let's check if a pod that has no annotations its considered by the registrar. Ensure that your working directory is `mode-crd` and deploy a new workload with this condition with the following command:
 
 ```console
-$ insert command to deploy a workload with no annotation
+$ kubectl apply -f k8s/not-annotated-workload.yaml
 ```
 
 As in the previous section, let's see the registration entries that are present in the SPIRE Server:
 
 ```console
-insert command to see registration entries
+$ kubectl exec -it statefulset/spire-server -n spire -c spire-server -- /bin/sh -c "bin/spire-server entry show -registrationUDSPath /tmp/spire-server/private/api.sock"
 ```
 
 The result of the command should be equal to the one shown in *Pod deletion* section, because no new entry has been created, as expected.
@@ -425,29 +564,65 @@ One of the benefits of using CRD Mode is that we can manipulate the SPIFFE IDs a
 
 If we check for SPIFFE IDs resources (using *kubectl get spiffeids -n spire*), we'll obtain something like the following:
 
-***insert the spiffeids resources***
+```console
+NAME                            AGE
+example-cluster-control-plane   11m
+spire-agent-jzc8w               11m
+```
 
-From this we can see that there are 2 already created custom resources, corresponding to the 3 entries that we saw above, minus the one for the workload, whose pod was deleted in the *Pod deletion* section.
+From this, we can see that there are two already created custom resources, corresponding to the three entries that we obtained when the scenario was deployed, minus the one for the annotated workload, whose pod was deleted in the *Pod deletion* section.
 
-Let's create a new SPIFFE ID CRD by using:
+From the `mode-crd` folder, let's create a new SPIFFE ID CRD by using:
 
 ```console
-# insert command to create a spiffe id crd
+# kubectl apply -f k8s/test_spiffeid.yaml
 ``` 
 
 We will check if it was created, executing the *kubectl get spiffeids -n spire* command, whose output will show 3 custom resources: 
 
-***insert output of spiffeids resources after applying the spiffeid***
+```console
+NAME                            AGE
+example-cluster-control-plane   19m
+my-test-spiffeid                19s
+spire-agent-jzc8w               18m
+```
 
 The resource was succesfully created, but had it any impact on the SPIRE Server? Let's execute the command below to see the registration entries:
 
 ```console
-$ insert command to see registration entries
+$ kubectl exec -it statefulset/spire-server -n spire -c spire-server -- /bin/sh -c "bin/spire-server entry show -registrationUDSPath /tmp/spire-server/private/api.sock"
 ```
 
 You'll get an output similar to this:
 
-***insert reg entries***
+```console
+Found 3 entries
+Entry ID         : cc0e9405-939d-4b45-96d7-e160c89cf6f5
+SPIFFE ID        : spiffe://example.org/k8s-workload-registrar/example-cluster/node/example-cluster-control-plane
+Parent ID        : spiffe://example.org/spire/server
+Revision         : 1
+TTL              : default
+Selector         : k8s_psat:agent_node_uid:08990bfd-3551-4761-8a1b-2e652984ffdd
+Selector         : k8s_psat:cluster:example-cluster
+
+Entry ID         : 0524528a-ca5b-452b-b5f9-7e9cb5652446
+SPIFFE ID        : spiffe://example.org/test
+Parent ID        : spiffe://example.org/spire/server
+Revision         : 1
+TTL              : default
+Selector         : k8s:ns:spire
+Selector         : k8s:pod-name:my-test-pod
+
+Entry ID         : b9b3b92b-06a2-4619-8fca-31ed1ea0138d
+SPIFFE ID        : spiffe://example.org/testing/agent
+Parent ID        : spiffe://example.org/k8s-workload-registrar/example-cluster/node/example-cluster-control-plane
+Revision         : 1
+TTL              : default
+Selector         : k8s:node-name:example-cluster-control-plane
+Selector         : k8s:ns:spire
+Selector         : k8s:pod-uid:538886bb-48e1-4795-b386-10e97f50e34f
+DNS name         : spire-agent-jzc8w
+```
 
 As we can see, a SPIFFE ID CRD creation triggers a registration entry creation on the SPIRE Server too. 
 
@@ -458,17 +633,22 @@ The lifecycle of a SPIFFE ID CRD can be managed by Kubernetes, and has a direct 
 Let's delete the previously created SPIFFE ID CRD, and later check for the registration entries on the server. Run the following command to delete the CRD:
 
 ```console
-$ insert command to delete a spiffe id crd
+$ kubectl delete spiffeid/my-test-spiffeid -n spire
 ```
 
 Now, we will check the registration entries:
 
 ```console
-$ insert command to see reg entries on spire server
+$ kubectl exec -it statefulset/spire-server -n spire -c spire-server -- /bin/sh -c "bin/spire-server entry show -registrationUDSPath /tmp/spire-server/private/api.sock"
 ```
 
-The output from this command should look like:
+The output from this command should include only the entries for the node and the agent, because the recently created SPIFFE ID CRD was deleted.
 
-***insert reg entries***
+## Teardown
 
-As we can see, the corresponding registration entry was deleted on the SPIRE Server too.
+
+To delete the resources used for this mode, we will delete the cluster by executing:
+
+```console
+kind delete cluster --name example-cluster
+```
