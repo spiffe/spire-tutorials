@@ -217,7 +217,7 @@ data:
 # initialize and uses the SPIRE healthcheck command for liveness/readiness
 # probes.
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: spire-server
   namespace: spire
@@ -228,6 +228,7 @@ spec:
   selector:
     matchLabels:
       app: spire-server
+  serviceName: spire-server
   template:
     metadata:
       namespace: spire

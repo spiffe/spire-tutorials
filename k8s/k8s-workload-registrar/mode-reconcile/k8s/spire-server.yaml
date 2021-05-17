@@ -180,6 +180,7 @@ data:
     mode = "reconcile"
     pod_label = "spire-workload"
     metrics_addr = "0"
+    controller_name = "k8s-workload-registrar"
 
 ---
 
@@ -187,7 +188,7 @@ data:
 # initialize and uses the SPIRE healthcheck command for liveness/readiness
 # probes.
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: spire-server
   namespace: spire
@@ -198,6 +199,7 @@ spec:
   selector:
     matchLabels:
       app: spire-server
+  serviceName: spire-server
   template:
     metadata:
       namespace: spire
@@ -275,18 +277,3 @@ spec:
       protocol: TCP
   selector:
     app: spire-server
-
----
-
-# Service definition for the admission webhook
-apiVersion: v1
-kind: Service
-metadata:
-  name: k8s-workload-registrar
-  namespace: spire
-spec:
-  selector:
-    app: spire-server
-  ports:
-    - port: 443
-      targetPort: registrar-port

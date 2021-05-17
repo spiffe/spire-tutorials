@@ -16,4 +16,4 @@ nodes:
 - role: control-plane
   extraMounts:
   - containerPath: /etc/kubernetes/pki/admctrl
-    hostPath: K8SDIR/admctrl
+    hostPath: WEBHOOKDIR/k8s/admctrl

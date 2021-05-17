@@ -1,9 +1,14 @@
-kubectl apply -f k8s/namespace.yaml
-kubectl apply -f k8s/spire-server.yaml
-kubectl rollout status deployment/spire-server -n spire
+#!/bin/bash
 
-kubectl apply -f k8s/spire-agent.yaml
+PARENT_DIR="$(dirname "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )")"
+
+kind create cluster --name example-cluster
+kubectl apply -f "${PARENT_DIR}"/k8s/namespace.yaml
+kubectl apply -f "${PARENT_DIR}"/k8s/spire-server.yaml
+kubectl rollout status statefulset/spire-server -n spire
+
+kubectl apply -f "${PARENT_DIR}"/k8s/spire-agent.yaml
 kubectl rollout status daemonset/spire-agent -n spire
 
-kubectl apply -f k8s/workload.yaml
+kubectl apply -f "${PARENT_DIR}"/k8s/workload.yaml
 kubectl rollout status deployment/example-workload -n spire

@@ -1,14 +1,14 @@
-kubectl apply -f k8s/namespace.yaml
-kubectl apply -f k8s/spiffeid.spiffe.io_spiffeids.yaml
-kubectl apply -f k8s/k8s-workload-registrar-cluster-role.yaml
-kubectl apply -f k8s/spire-server.yaml
-kubectl apply -f k8s/k8s-workload-registrar-configmap.yaml
-kubectl apply -f k8s/k8s-workload-registrar-statefulset.yaml
+#!/bin/bash
 
+PARENT_DIR="$(dirname "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )")"
+
+kind create cluster --name example-cluster
+kubectl apply -f "${PARENT_DIR}"/k8s/namespace.yaml
+kubectl apply -f "${PARENT_DIR}"/k8s/spiffeid.spiffe.io_spiffeids.yaml
+kubectl apply -f "${PARENT_DIR}"/k8s/spire-server.yaml
 kubectl rollout status statefulset/spire-server -n spire
 
-kubectl apply -f k8s/spire-agent.yaml
-
+kubectl apply -f "${PARENT_DIR}"/k8s/spire-agent.yaml
 kubectl rollout status daemonset/spire-agent -n spire
 
-kubectl apply -f k8s/workload.yaml # doesnt work
+kubectl apply -f "${PARENT_DIR}"/k8s/workload.yaml
