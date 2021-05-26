@@ -4,16 +4,16 @@ configMapGenerator:
     - backend/config/envoy.yaml
 - name: backend-balance-json-data
   files:
-    - backend/json/balances/1
-    - backend/json/balances/2
+    - backend/json/balances/balance_1
+    - backend/json/balances/balance_2
 - name: backend-profile-json-data
   files:
-    - backend/json/profiles/1
-    - backend/json/profiles/2
+    - backend/json/profiles/profile_1
+    - backend/json/profiles/profile_2
 - name: backend-transactions-json-data
   files:
-    - backend/json/transactions/1
-    - backend/json/transactions/2
+    - backend/json/transactions/transaction_1
+    - backend/json/transactions/transaction_2
 - name: frontend-envoy
   files:
     - frontend/config/envoy.yaml    
