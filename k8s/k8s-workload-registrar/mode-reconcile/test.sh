@@ -8,13 +8,13 @@ red=$(tput setaf 1) || true
 green=$(tput setaf 2) || true
 
 set_env() {
-    echo "${bold}Setting up webhook environment...${norm}"  
-    "${DIR}"/deploy-scenario.sh
+    echo "${bold}Setting up reconcile environment...${norm}"  
+    "${DIR}"/scripts/deploy-scenario.sh > /dev/null
 }
 
 cleanup() {
     echo "${bold}Cleaning up...${norm}"
-    kind delete cluster --name example-cluster
+    "${DIR}"/scripts/delete-scenario.sh > /dev/null
 }
 
 trap cleanup EXIT
@@ -22,9 +22,9 @@ trap cleanup EXIT
 cleanup
 set_env
 
-NODE_SPIFFE_ID="spiffe://example.org/k8s-workload-registrar/example-cluster/node"
-AGENT_SPIFFE_ID="spiffe://example.org/ns/spire/sa/spire-agent"
-WORKLOAD_SPIFFE_ID="spiffe://example.org/ns/spire/sa/default"
+NODE_SPIFFE_ID="spiffe://example.org/k8s-workload-registrar/example-cluster/node/"
+AGENT_SPIFFE_ID="spiffe://example.org/agent"
+WORKLOAD_SPIFFE_ID="spiffe://example.org/example-workload"
 
 MAX_FETCH_CHECKS=60
 FETCH_CHECK_INTERVAL=5
@@ -33,7 +33,7 @@ for ((i=0;i<"$MAX_FETCH_CHECKS";i++)); do
     if [[ -n $(kubectl exec -t statefulset/spire-server -n spire -c spire-server -- \
                 /opt/spire/bin/spire-server entry show -registrationUDSPath /tmp/spire-server/private/api.sock \
                     | grep "$NODE_SPIFFE_ID") ]] &&
-       [[ -n $(kubectl exec -t daemonset/spire-agent -n spire -- \
+       [[ -n $(kubectl exec -t daemonset/spire-agent -n spire -c spire-agent -- \
                 /opt/spire/bin/spire-agent api fetch -socketPath /tmp/spire-agent/public/api.sock  \
                     | grep "$AGENT_SPIFFE_ID") ]] &&
        [[ -n $(kubectl exec -t deployment/example-workload -n spire -- \
@@ -46,10 +46,8 @@ for ((i=0;i<"$MAX_FETCH_CHECKS";i++)); do
 done
 
 if [ "${DONE}" -eq 1 ]; then
-    echo "${green}Webhook mode test succeeded.${norm}"
+    exit 0
 else
-    echo "${red}Webhook mode test failed.${norm}"
+    echo "${red}Reconcile mode test failed.${norm}"
     exit 1
 fi
-
-exit 0

@@ -13,10 +13,10 @@ fail() {
 }
 
 for testdir in "${DIR}"/*; do
-	if [[ -x "${testdir}/scripts/test.sh" ]]; then
+	if [[ -x "${testdir}/test.sh" ]]; then
 		testname=$(basename "$testdir")
 		echo "${bold}Running \"$testname\" test...${norm}"
-		if ${testdir}/scripts/test.sh; then
+		if ${testdir}/test.sh; then
 			echo "${green}\"$testname\" test succeeded${norm}"
 		else
 			echo "${red}\"$testname\" test failed${norm}"
@@ -28,4 +28,3 @@ done
 if [ -n "${FAILED}" ]; then
 	fail "There were test failures"
 fi
-echo "${green}Done. Kubernetes workload registrar tests passed!${norm}"

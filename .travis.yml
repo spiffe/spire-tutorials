@@ -25,8 +25,6 @@ before_script:
   - minikube update-context
   # Wait for Kubernetes to be up and ready.
   - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1; done
-  # Download kind
-  - curl -Lo kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64 && chmod +x kind && sudo mv kind /usr/local/bin/
 
 script:
   - ./k8s/test-all.sh
