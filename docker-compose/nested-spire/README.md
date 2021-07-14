@@ -48,7 +48,7 @@ We define all the services for the tutorial in the [docker-compose.yaml](docker-
    services:
      # Root
      root-server:
-       image: gcr.io/spiffe-io/spire-server:0.11.0
+       image: gcr.io/spiffe-io/spire-server:1.0.0
        hostname: root-server
        volumes:
          - ./root/server:/opt/spire/conf/server
@@ -56,7 +56,7 @@ We define all the services for the tutorial in the [docker-compose.yaml](docker-
      root-agent:
        # Share the host pid namespace so this agent can attest the nested servers
        pid: "host"
-       image: gcr.io/spiffe-io/spire-agent:0.11.0
+       image: gcr.io/spiffe-io/spire-agent:1.0.0
        depends_on: ["root-server"]
        hostname: root-agent
        volumes:
@@ -91,7 +91,7 @@ The Docker Compose definition for the `nestedA-server` service in the [docker-co
    nestedA-server:
      # Share the host pid namespace so this server can be attested by the root agent
      pid: "host"
-     image: gcr.io/spiffe-io/spire-server:0.11.0
+     image: gcr.io/spiffe-io/spire-server:1.0.0
      hostname: nestedA-server
      labels:
        # label to attest nestedA-server against root-agent

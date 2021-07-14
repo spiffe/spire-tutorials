@@ -18,13 +18,13 @@ services:
     ports:
       - "9090:9090"
   spire-server:
-    image: gcr.io/spiffe-io/spire-server:0.11.0
+    image: gcr.io/spiffe-io/spire-server:1.0.0
     hostname: spire-server
     volumes:
         - ./spire/server:/opt/spire/conf/server
     command: ["-config", "/opt/spire/conf/server/server.conf"]
   spire-agent:
-    image: gcr.io/spiffe-io/spire-agent:0.11.0
+    image: gcr.io/spiffe-io/spire-agent:1.0.0
     depends_on: ["spire-server"]
     hostname: spire-agent
     volumes:
