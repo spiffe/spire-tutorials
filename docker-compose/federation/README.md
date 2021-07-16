@@ -16,9 +16,9 @@ In this tutorial you will learn how to:
 
 The baseline components for SPIFFE federation are:
 
-* Two SPIRE Server instances
-* Two SPIRE Agents, one connected to one SPIRE Server, and the second connected to the other SPIRE Server
-* Two workloads that needs to communicate each other via mTLS, and use the Workload API to get SVIDs and trust bundles
+* Two SPIRE Server instances running version 1.0.0.
+* Two SPIRE Agents running version 1.0.0. One connected to one SPIRE Server, and the second connected to the other SPIRE Server.
+* Two workloads that need to communicate each other via mTLS, and use the Workload API to get SVIDs and trust bundles.
 
 # Scenario
 
@@ -82,7 +82,7 @@ At this point, both SPIRE Servers have exposed their federation endpoints to pro
 
 ## Configure a Federation Endpoint Using Web PKI Authentication
 
-We are going to assume that only the broker's SPIRE Server will use Web PKI authentication for its federation endpoint. The stock market SPIRE Server will still use SPIFFE authentication. Hence, the stock market SPIRE Server configuration remains the same as seen in the previous section.
+We are going to assume that only the broker's SPIRE Server will use Web PKI authentication for its federation endpoint. The stock market SPIRE Server will still use SPIFFE Authentication. Hence, the stock market SPIRE Server configuration remains the same as seen in the previous section.
 
 Then, to configure the broker's SPIRE Server bundle endpoint, we configure the `federation` section as follows:
 
@@ -113,9 +113,9 @@ For SPIFFE Federation using Web PKI to work, you must own the DNS domain specifi
 
 # Configure SPIRE Servers to Retrieve Trust Bundles From Each Other
 
-After configuring federation endpoints, the next step to enable SPIFFE federation is to configure the SPIRE Servers to find the trust bundles for other trust domains. The `federates_with` configuration option in `server.conf` is where you specify the endpoint of the other trust domain. The configuration of this section has some slight differences when using the different methods of authentication.
+After configuring federation endpoints, the next step to enable SPIFFE federation is to configure the SPIRE Servers to find the trust bundles for other trust domains. The `federates_with` configuration option in `server.conf` is where you specify the endpoint of the other trust domain. The configuration of this section has some slight differences when using the different methods of authentication, according with the requirements for each endpoint profile.
 
-## Configure Trust Bundle Location Using SPIFFE Authentication
+## Configure Trust Bundle Location Using SPIFFE Authentication (https_spiffe)
 
 As we saw previously, the SPIRE Server of the stock market service provider has its federation endpoint listening on port `8443` at any IP address. We will also assume that `spire-server-stock` is a DNS name that resolves to the stock market service's SPIRE Server IP address. (The Docker Compose demo here uses the hostname `spire-server-stock`, but in typical usage you would specify a FQDN.) Then, the broker's SPIRE Server must be configured with the following `federates_with` section:
 ```hcl
@@ -132,9 +132,9 @@ server {
             port = 8443
         }
         federates_with "stockmarket.example" {
-            bundle_endpoint {
-                address = "spire-server-stock"
-                port = 8443
+            bundle_endpoint_url = "https://spire-server-stock:8443"
+            bundle_endpoint_profile "https_spiffe" {
+                endpoint_spiffe_id = "spiffe://stockmarket.example/spire/server"
             }
         }
     }
@@ -157,19 +157,19 @@ server {
             port = 8443
         }
         federates_with "broker.example" {
-            bundle_endpoint {
-                address = "spire-server-broker"
-                port = 8443
+            bundle_endpoint_url = "https://spire-server-broker:8443"
+            bundle_endpoint_profile "https_spiffe" {
+                endpoint_spiffe_id = "spiffe://broker.example/spire/server"
             }
         }
     }
 }
 ```
-That is it. Specifying the `federation` section and `federates_with` subsection of `server.conf` is all that's needed configure SPIFFE federation. To finish enabling SPIFFE federation, we need to bootstrap the trust bundles and register the workloads using `spire-server` commands as described below.
+Note that the "https_spiffe" profile has been specified, indicating the expected SPIFFE ID of the bundle endpoint. Specifying the `federation` section and `federates_with` subsection of `server.conf` is all that's needed to configure SPIFFE federation. To finish enabling SPIFFE federation, we need to bootstrap the trust bundles and register the workloads using `spire-server` commands as described below.
 
-## Configure Trust Bundle Location Using Web PKI authentication
+## Configure Trust Bundle Location Using Web PKI authentication (https_web)
 
-As mentioned, in this alternate scenario we are assuming that only the broker's SPIRE Server will use Web PKI authentication for its federation endpoint, so the `federates_with` configuration for the broker server is the same as seen in the previous section. However, the SPIRE Server of the stock market service provider needs a different configuration:
+As mentioned, in this alternate scenario we are assuming that only the broker's SPIRE Server will use Web PKI authentication for its federation endpoint, so the `federates_with` configuration for the broker server is the same as seen in the previous section. However, the SPIRE Server of the stock market service provider needs a different configuration that specifies the "https_web" profile instead of "https_spiffe":
 
 ```hcl
 server {
@@ -185,18 +185,13 @@ server {
             port = 8443
         }
         federates_with "broker.example" {
-            bundle_endpoint {
-                address = "broker.example"
-                use_web_pki = true
-            }
+            bundle_endpoint_url = "https://spire-server-broker:8443"
+            bundle_endpoint_profile "https_web" {}
         }
     }
 }
 ```
-The differences are:
-- `port` was removed. This is because by default it is set to `443`, which is the port where the broker's federation bundle endpoint is listening.
-- `address` now is set to the broker's domain `broker.example`.
-- `use_web_pki` was added and set to `true`. This is mandatory when the bundle endpoint to which we want to federate is using Web PKI authentication.
+It can be noticed that the "https_web" profile does not require additional configuration settings. Endpoints are authenticated using the same public CA certificates installed in the operating system.
 
 # Bootstrap Federation
 
@@ -266,7 +261,7 @@ Similarly, once this registration entry is created, when the quotes service asks
 
 That is about it. Now all the pieces are in place to make federation work and demonstrate how the webapp is able to communicate with the quotes service despite having identities with different trust domains.
 
-# Federation Example Using SPIFFE Authentication with SPIRE 0.11.0
+# Federation Example Using SPIFFE Authentication
 
 This section explains how to use Docker Compose to try an example implementation of the SPIFFE auth scenario described in this tutorial.
 
@@ -341,7 +336,7 @@ You should see:
 server {
     bind_address = "0.0.0.0"
     bind_port = "8081"
-    registration_uds_path = "/tmp/spire-registration.sock"
+    socket_path = "/tmp/spire-server/private/api.sock"
     trust_domain = "broker.example"
     data_dir = "/opt/spire/data/server"
     log_level = "DEBUG"
@@ -359,11 +354,11 @@ server {
             port = 8443
         }
         federates_with "stockmarket.example" {
-            bundle_endpoint {
-                address = "spire-server-stock"
-                port = 8443
+            bundle_endpoint_url = "https://spire-server-stock:8443"
+            bundle_endpoint_profile "https_spiffe" {
+                endpoint_spiffe_id = "spiffe://stockmarket.example/spire/server"
             }
-        }    
+        }
     }
 }
 
@@ -375,11 +370,11 @@ plugins {
         }
     }
 
-        NodeAttestor "x509pop" {
-                plugin_data {
-                        ca_bundle_path = "/opt/spire/conf/server/agent-cacert.pem"
-                }
-        }
+	NodeAttestor "x509pop" {
+		plugin_data {
+			ca_bundle_path = "/opt/spire/conf/server/agent-cacert.pem"
+		}
+	}
 
     NodeResolver "noop" {
         plugin_data {}
@@ -403,7 +398,7 @@ You should see:
 server {
     bind_address = "0.0.0.0"
     bind_port = "8081"
-    registration_uds_path = "/tmp/spire-registration.sock"
+    socket_path = "/tmp/spire-server/private/api.sock"
     trust_domain = "stockmarket.example"
     data_dir = "/opt/spire/data/server"
     log_level = "DEBUG"
@@ -421,11 +416,11 @@ server {
             port = 8443
         }
         federates_with "broker.example" {
-            bundle_endpoint {
-                address = "spire-server-broker"
-                port = 8443
+            bundle_endpoint_url = "https://spire-server-broker:8443"
+            bundle_endpoint_profile "https_spiffe" {
+                endpoint_spiffe_id = "spiffe://broker.example/spire/server"
             }
-        }    
+        }
     }
 }
 
@@ -437,11 +432,11 @@ plugins {
         }
     }
 
-        NodeAttestor "x509pop" {
-                plugin_data {
-                        ca_bundle_path = "/opt/spire/conf/server/agent-cacert.pem"
-                }
-        }
+	NodeAttestor "x509pop" {
+		plugin_data {
+			ca_bundle_path = "/opt/spire/conf/server/agent-cacert.pem"
+		}
+	}
 
     NodeResolver "noop" {
         plugin_data {}
@@ -498,4 +493,3 @@ FederatesWith : spiffe://broker.example
 ```
 $ docker-compose down
 ```
-

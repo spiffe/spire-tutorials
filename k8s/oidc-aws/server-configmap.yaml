@@ -8,7 +8,7 @@ data:
     server {
       bind_address = "0.0.0.0"
       bind_port = "8081"
-      registration_uds_path = "/run/spire/sockets/registration.sock"
+      socket_path = "/tmp/spire-server/private/api.sock"
       trust_domain = "example.org"
       data_dir = "/run/spire/data"
       log_level = "DEBUG"
