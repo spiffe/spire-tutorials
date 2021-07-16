@@ -16,9 +16,9 @@ In this tutorial you will learn how to:
 
 The baseline components for SPIFFE federation are:
 
-* Two SPIRE Server instances
-* Two SPIRE Agents, one connected to one SPIRE Server, and the second connected to the other SPIRE Server
-* Two workloads that needs to communicate each other via mTLS, and use the Workload API to get SVIDs and trust bundles
+* Two SPIRE Server instances running version 1.0.0.
+* Two SPIRE Agents running version 1.0.0. One connected to one SPIRE Server, and the second connected to the other SPIRE Server.
+* Two workloads that need to communicate each other via mTLS, and use the Workload API to get SVIDs and trust bundles.
 
 # Scenario
 
@@ -261,7 +261,7 @@ Similarly, once this registration entry is created, when the quotes service asks
 
 That is about it. Now all the pieces are in place to make federation work and demonstrate how the webapp is able to communicate with the quotes service despite having identities with different trust domains.
 
-# Federation Example Using SPIFFE Authentication with SPIRE 1.0.0
+# Federation Example Using SPIFFE Authentication
 
 This section explains how to use Docker Compose to try an example implementation of the SPIFFE auth scenario described in this tutorial.
 
