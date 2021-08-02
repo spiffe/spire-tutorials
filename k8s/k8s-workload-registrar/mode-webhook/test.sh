@@ -22,7 +22,7 @@ trap cleanup EXIT
 cleanup
 set_env
 
-NODE_SPIFFE_ID="spiffe://example.org/k8s-workload-registrar/example-cluster/node"
+NODE_SPIFFE_ID="spiffe://example.org/k8s-workload-registrar/demo-cluster/node"
 AGENT_SPIFFE_ID="spiffe://example.org/ns/spire/sa/spire-agent"
 WORKLOAD_SPIFFE_ID="spiffe://example.org/ns/spire/sa/default"
 

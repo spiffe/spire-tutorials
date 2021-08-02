@@ -1,4 +1,3 @@
-# ServiceAccount for the SPIRE agent
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -7,7 +6,6 @@ metadata:
 
 ---
 
-# Required cluster role to allow spire-agent to query k8s API server
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -19,7 +17,6 @@ rules:
 
 ---
 
-# Binds above cluster role to spire-agent service account
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -35,9 +32,6 @@ roleRef:
 
 ---
 
-# ConfigMap for the SPIRE agent featuring:
-# 1) PSAT node attestation
-# 2) K8S Workload Attestation over the secure kubelet port
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -58,7 +52,7 @@ data:
     plugins {
       NodeAttestor "k8s_psat" {
         plugin_data {
-          cluster = "example-cluster"
+          cluster = "demo-cluster"
         }
       }
 
@@ -109,7 +103,6 @@ spec:
       annotations:
         spiffe.io/spiffe-id: "testing/agent"
     spec:
-      # hostPID is required for K8S Workload Attestation.
       hostPID: true
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet

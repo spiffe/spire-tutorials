@@ -1,5 +1,3 @@
-# Validating Webhook Configuration for the K8S Workload Registrar
-#
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:

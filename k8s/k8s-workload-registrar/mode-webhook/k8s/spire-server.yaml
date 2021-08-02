@@ -1,4 +1,3 @@
-# ServiceAccount used by the SPIRE server.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -7,7 +6,6 @@ metadata:
 
 ---
 
-# Required cluster role to allow spire-server to query k8s API server
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -24,7 +22,6 @@ rules:
 
 ---
 
-# Binds above cluster role to spire-server service account
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -41,19 +38,15 @@ roleRef:
 
 ---
 
-# Role for the SPIRE server
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: spire
   name: spire-server-role
 rules:
-  # allow "get" access to pods (to resolve selectors for PSAT attestation)
 - apiGroups: [""]
   resources: ["pods"]
   verbs: ["get"]
-  # allow access to "get" and "patch" the spire-bundle ConfigMap (for SPIRE
-  # agent bootstrapping, see the spire-bundle ConfigMap below)
 - apiGroups: [""]
   resources: ["configmaps"]
   resourceNames: ["spire-bundle"]
@@ -61,8 +54,6 @@ rules:
 
 ---
 
-# RoleBinding granting the spire-server-role to the SPIRE server
-# service account.
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -79,10 +70,6 @@ roleRef:
 
 ---
 
-# ConfigMap containing the latest trust bundle for the trust domain. It is
-# updated by SPIRE using the k8sbundle notifier plugin. SPIRE agents mount
-# this config map and use the certificate to bootstrap trust with the SPIRE
-# server during attestation.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -91,7 +78,6 @@ metadata:
 
 ---
 
-# ConfigMap containing the SPIRE server configuration.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -126,7 +112,7 @@ data:
       NodeAttestor "k8s_psat" {
         plugin_data {
           clusters = {
-            "example-cluster" = {
+            "demo-cluster" = {
               service_account_whitelist = ["spire:spire-agent"]
             }
           }
@@ -166,7 +152,7 @@ data:
   k8s-workload-registrar.conf: |
     trust_domain = "example.org"
     server_socket_path = "/tmp/spire-server/private/api.sock"
-    cluster = "example-cluster"
+    cluster = "demo-cluster"
     mode = "webhook"
     cert_path = "/run/spire/k8s-workload-registrar/certs/server-cert.pem"
     key_path = "/run/spire/k8s-workload-registrar/secret/server-key.pem"
@@ -174,9 +160,6 @@ data:
 
 ---
 
-# ConfigMap containing the K8S Workload Registrar server certificate and
-# CA bundle used to verify the client certificate presented by the API server.
-#
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -213,9 +196,6 @@ data:
 
 ---
 
-# This is the Deployment for the SPIRE server. It waits for SPIRE database to
-# initialize and uses the SPIRE healthcheck command for liveness/readiness
-# probes.
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -303,7 +283,6 @@ spec:
 
 ---
 
-# Service definition for SPIRE server defining the gRPC port.
 apiVersion: v1
 kind: Service
 metadata:
@@ -321,7 +300,6 @@ spec:
 
 ---
 
-# Service definition for the admission webhook
 apiVersion: v1
 kind: Service
 metadata:
