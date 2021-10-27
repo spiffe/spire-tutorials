@@ -50,7 +50,7 @@ data:
             # TODO: Change this to your cluster name
             "MY_CLUSTER_NAME" = {
               use_token_review_api_validation = true
-              service_account_whitelist = ["spire:spire-agent"]
+              service_account_allow_list = ["spire:spire-agent"]
             }
           }
         }
