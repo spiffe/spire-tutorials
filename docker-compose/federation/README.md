@@ -376,10 +376,6 @@ plugins {
 		}
 	}
 
-    NodeResolver "noop" {
-        plugin_data {}
-    }
-
     KeyManager "memory" {
         plugin_data = {}
     }
@@ -437,10 +433,6 @@ plugins {
 			ca_bundle_path = "/opt/spire/conf/server/agent-cacert.pem"
 		}
 	}
-
-    NodeResolver "noop" {
-        plugin_data {}
-    }
 
     KeyManager "memory" {
         plugin_data = {}
