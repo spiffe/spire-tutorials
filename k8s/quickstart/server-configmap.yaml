@@ -43,10 +43,6 @@ data:
         }
       }
 
-      NodeResolver "noop" {
-        plugin_data {}
-      }
-
       KeyManager "disk" {
         plugin_data {
           keys_path = "/run/spire/data/keys.json"
