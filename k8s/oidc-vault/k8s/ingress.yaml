@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: spire-ingress
@@ -7,18 +7,24 @@ spec:
   tls:
     - hosts:
         # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you will configure in the DNS
-        - MY_DISCOVERY_DOMAIN
+        - oidc-discovery.example.org
       secretName: oidc-secret
   rules:
     # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you will configure in the DNS
-    - host: MY_DISCOVERY_DOMAIN
+    - host: oidc-discovery.example.org
       http:
         paths:
           - path: /.well-known/openid-configuration
+            pathType: Prefix
             backend:
-              serviceName: spire-oidc
-              servicePort: 443
+              service:
+                name: spire-oidc
+                port:
+                  number: 443
           - path: /keys
+            pathType: Prefix
             backend:
-              serviceName: spire-oidc
-              servicePort: 443
+              service:
+                name: spire-oidc
+                port:
+                  number: 443
