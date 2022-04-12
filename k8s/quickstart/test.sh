@@ -130,8 +130,8 @@ check_for_node_attestation() {
 	exit -1
 }
 
-trap cleanup EXIT
-start_minikube
+#trap cleanup EXIT
+#start_minikube
 apply_server_config
 wait_for_server
 apply_agent_config
