@@ -7,7 +7,7 @@ data:
   oidc-discovery-provider.conf: |
     log_level = "INFO"
     # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you will configure in DNS
-    domain = "oidc-discovery.example.org"
+    domains = ["oidc-discovery.example.org"]
     acme {
         directory_url = "https://acme-v02.api.letsencrypt.org/directory"
         cache_dir = "/run/spire"
@@ -15,6 +15,6 @@ data:
         # TODO: Change MY_EMAIL_ADDRESS with your email
         email = "gaoxiang.gx@alibaba-inc.com"
     }
-    registration_api {
-        socket_path = "/run/spire/sockets/registration.sock"
+    server_api {
+       address = "unix:///tmp/spire-server/private/api.sock"
     }

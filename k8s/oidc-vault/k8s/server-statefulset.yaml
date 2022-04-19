@@ -37,6 +37,9 @@ spec:
             - name: spire-server-socket
               mountPath: /run/spire/sockets
               readOnly: false
+            - name: spire-server-socket-private
+              mountPath: /tmp/spire-server/private/
+              readOnly: false
           livenessProbe:
             httpGet:
               path: /live
@@ -63,6 +66,9 @@ spec:
           - name: spire-server-socket
             mountPath: /run/spire/sockets
             readOnly: true
+          - name: spire-server-socket-private
+            mountPath: /tmp/spire-server/private/
+            readOnly: true
           - name: spire-oidc-config
             mountPath: /run/spire/oidc/config/
             readOnly: true
@@ -78,6 +84,10 @@ spec:
         - name: spire-config
           configMap:
             name: spire-server
+        - name: spire-server-socket-private
+          hostPath:
+            path: /run/spire/sockets/server/private
+            type: DirectoryOrCreate
         - name: spire-server-socket
           hostPath:
             path: /run/spire/sockets/server
