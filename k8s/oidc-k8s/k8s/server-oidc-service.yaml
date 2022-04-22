@@ -1,0 +1,14 @@
+# Service definition for the admission webhook
+apiVersion: v1
+kind: Service
+metadata:
+  name: spire-oidc
+  namespace: spire
+spec:
+  type: LoadBalancer
+  selector:
+    app: spire-server
+  ports:
+    - name: http
+      port: 8088
+      targetPort: spire-oidc-port

@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oidc-discovery-provider
+  namespace: spire
+data:
+  oidc-discovery-provider.conf: |
+    log_level = "INFO"
+    # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you will configure in DNS
+    domains = ["oidc-discovery.example.org"]
+
+    insecure_addr = ":8088"
+    #acme {
+    #    directory_url = "https://acme-v02.api.letsencrypt.org/directory"
+    #    cache_dir = "/run/spire"
+    #    tos_accepted = true
+    #    # TODO: Change MY_EMAIL_ADDRESS with your email
+    #    email = "gaoxiang.gx@alibaba-inc.com"
+    #}
+    
+    server_api {
+       address = "unix:///tmp/spire-server/private/api.sock"
+    }
