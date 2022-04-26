@@ -5,7 +5,6 @@ metadata:
   name: spire-oidc
   namespace: spire
 spec:
-  type: LoadBalancer
   selector:
     app: spire-server
   ports:

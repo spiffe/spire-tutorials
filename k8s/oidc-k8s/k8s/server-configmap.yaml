@@ -26,7 +26,7 @@ data:
 
       # Creates the iss claim in JWT-SVIDs.
       # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you will configure in DNS
-      jwt_issuer = "oidc-discovery.example.org"
+      jwt_issuer = "https://oidc-discovery.example.org"
 
       default_svid_ttl = "1h"
       ca_subject = {
