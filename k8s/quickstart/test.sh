@@ -13,18 +13,15 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 MINIKUBEPROFILE="SPIRE-SYSTEMS-TEST"
 MINIKUBECMD="minikube -p ${MINIKUBEPROFILE}"
 CHECKINTERVAL=1
-if [ -n "${TRAVIS}" ]; then
-	# Use the default profile inside of Travis
-	MINIKUBECMD="/usr/local/bin/minikube"
-	# Travis is slow. Give our containers more time.
+if [ -n "${GITHUB_WORKFLOW}" ]; then
 	CHECKINTERVAL=5
 fi
 TMPDIR=$(mktemp -d)
 SERVERLOGS=${TMPDIR}/spire-server-logs.log
 
 start_minikube() {
-	# Travis will start up minikube (via .travis.yml)
-	if [ -z "${TRAVIS}" ]; then
+	# GH actions will start up minikube
+	if [ -z "${GITHUB_WORKFLOW}" ]; then
 		echo "${bold}Starting minikube... ${norm}"
 		${MINIKUBECMD} start
 		eval $(${MINIKUBECMD} docker-env)
@@ -36,8 +33,8 @@ tear_down_config() {
 }
 
 stop_minikube() {
-	# Don't stop the minikube inside of travis
-	if [ -z "${TRAVIS}" ]; then
+	# Don't stop the minikube inside of GH actions
+	if [ -z "${GITHUB_WORKFLOW}" ]; then
 		${MINIKUBECMD} stop > /dev/null || true
 	fi
 }

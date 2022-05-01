@@ -1,0 +1,29 @@
+name: PR Build
+on:
+  push: 
+    branches:
+      - master
+  pull_request: {}
+  workflow_dispatch: {}
+env:
+  GO_VERSION: 1.16.5
+  CHANGE_MINIKUBE_NONE_USER: true
+  TERM: xterm
+jobs:
+  test-all:
+    runs-on: ubuntu-18.04
+    timeout-minutes: 30
+    steps: 
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: install minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+      - name: Envoy
+        run: docker-compose/test-all.sh
+      - name: K8s
+        run: k8s/test-all.sh

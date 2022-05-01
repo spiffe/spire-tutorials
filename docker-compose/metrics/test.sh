@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 norm=$(tput sgr0) || true
@@ -15,7 +14,7 @@ log() {
 
 clean-env() {
   log "Cleaning up..."
-  bash "${DIR}"/scripts/clean-env.sh > /dev/null
+  bash "${DIR}"/scripts/clean-env.sh
 }
 
 trap clean-env EXIT
@@ -23,16 +22,16 @@ trap clean-env EXIT
 
 log "Preparing environment..."
 clean-env
-bash "${DIR}"/scripts/set-env.sh > /dev/null
-bash "${DIR}"/scripts/create-workload-registration-entry.sh > /dev/null
+bash "${DIR}"/scripts/set-env.sh
+bash "${DIR}"/scripts/create-workload-registration-entry.sh
 
 log "Checking Statsd received metrics pushed by SPIRE..."
 
 STATSD_LOG_LINE="MetricLineReceiver connection with .* established"
 for ((i=0;i<60;i++)); do
     if ! docker-compose -f "${DIR}"/docker-compose.yaml logs --tail=10 -t graphite-statsd | grep -qe "${STATSD_LOG_LINE}" ; then
-        sleep 1
-        continue
+	sleep 1
+	continue
     fi
     METRIC_RECEIVED=1
     break
@@ -44,9 +43,9 @@ fi
 
 log "Checking that Prometheus can reach the endpoint exposed by SPIRE..."
 for ((i=0;i<60;i++)); do
-    if ! docker-compose -f "${DIR}"/docker-compose.yaml exec prometheus wget -S spire-server:8088/ | grep -qe "200 OK" ; then
-        sleep 1
-        continue
+    if ! docker-compose -f "${DIR}"/docker-compose.yaml exec -T prometheus wget -S spire-server:8088/ 2>&1 | grep -qe "200 OK" ; then
+	sleep 1
+	continue
     fi
     CONNECTION_OK=1
     break
