@@ -5,6 +5,8 @@ set -e
 bb=$(tput bold)
 nn=$(tput sgr0)
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 fingerprint() {
 	# calculate the SHA1 digest of the DER bytes of the certificate using the
 	# "coreutils" output format (`-r`) to provide uniform output from
@@ -12,18 +14,18 @@ fingerprint() {
 	cat $1 | openssl x509 -outform DER | openssl sha1 -r | awk '{print $1}'
 }
 
-BROKER_WEBAPP_AGENT_FINGERPRINT=$(fingerprint docker/broker-webapp/conf/agent.crt.pem)
-QUOTES_SERVICE_AGENT_FINGERPRINT=$(fingerprint docker/stock-quotes-service/conf/agent.crt.pem)
+BROKER_WEBAPP_AGENT_FINGERPRINT=$(fingerprint ${DIR}/docker/broker-webapp/conf/agent.crt.pem)
+QUOTES_SERVICE_AGENT_FINGERPRINT=$(fingerprint ${DIR}/docker/stock-quotes-service/conf/agent.crt.pem)
 
 echo "${bb}Creating registration entry for the broker-webapp...${nn}"
-docker-compose exec spire-server-broker bin/spire-server entry create \
+docker-compose -f "${DIR}"/docker-compose.yaml exec -T spire-server-broker bin/spire-server entry create \
 	-parentID spiffe://broker.example/spire/agent/x509pop/${BROKER_WEBAPP_AGENT_FINGERPRINT} \
 	-spiffeID spiffe://broker.example/webapp \
 	-selector unix:user:root \
 	-federatesWith "spiffe://stockmarket.example"
 
 echo "${bb}Creating registration entry for the stock-quotes-service...${nn}"
-docker-compose exec spire-server-stock bin/spire-server entry create \
+docker-compose -f "${DIR}"/docker-compose.yaml exec -T spire-server-stock bin/spire-server entry create \
 	-parentID spiffe://stockmarket.example/spire/agent/x509pop/${QUOTES_SERVICE_AGENT_FINGERPRINT} \
 	-spiffeID spiffe://stockmarket.example/quotes-service \
 	-selector unix:user:root \
