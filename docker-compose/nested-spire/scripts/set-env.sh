@@ -50,7 +50,7 @@ check-entry-is-propagated() {
 
 # Configure the environment-dependent CGROUP matchers for the docker workload
 # attestors.
-CGROUP_MATCHERS="TEreso"
+CGROUP_MATCHERS=""
 if [ -n "${GITHUB_WORKFLOW}" ]; then
     CGROUP_MATCHERS='"/actions_job/<id>"'
 fi
