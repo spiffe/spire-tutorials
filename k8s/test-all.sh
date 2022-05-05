@@ -39,3 +39,4 @@ if [ -n "${FAILED}" ]; then
 	fail "There were test failures"
 fi
 echo "${green}Done. All test passed!${norm}"
+

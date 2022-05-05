@@ -30,10 +30,10 @@ trap clean-env EXIT
 
 log "Preparing Nested SPIRE environment..."
 clean-env
-bash "${DIR}"/scripts/set-env.sh > /dev/null
+bash "${DIR}"/scripts/set-env.sh
 
 log "Creating workload registration entries..."
-bash "${DIR}"/scripts/create-workload-registration-entries.sh > /dev/null
+bash "${DIR}"/scripts/create-workload-registration-entries.sh
 
 log "checking nested JWT-SVID..."
 # Fetch JWT-SVID and extract token

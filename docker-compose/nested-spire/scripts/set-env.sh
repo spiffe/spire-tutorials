@@ -48,6 +48,15 @@ check-entry-is-propagated() {
 }
 
 
+# Configure the environment-dependent CGROUP matchers for the docker workload
+# attestors.
+CGROUP_MATCHERS=""
+if [ -n "${GITHUB_WORKFLOW}" ]; then
+    CGROUP_MATCHERS='"/actions_job/<id>"'
+fi
+sed -i.bak "s#\#container_id_cgroup_matchers#container_id_cgroup_matchers#" "${PARENT_DIR}"/root/agent/agent.conf
+sed -i.bak "s#CGROUP_MATCHERS#$CGROUP_MATCHERS#" "${PARENT_DIR}"/root/agent/agent.conf
+
 # create a shared folder for root agent socket to be accessed by nestedA and nestedB servers
 mkdir -p "${PARENT_DIR}"/sharedRootSocket
 
