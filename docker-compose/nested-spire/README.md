@@ -32,7 +32,7 @@ Before proceeding, review the following system requirements:
 
 # Part 1: Run Services
 
-This tutorial's `nested-spire` main directory contains three subdirectories, one for each of the SPIRE deployments: `root`, `nestedA` and `nestedB`. These directories hold the configuration files for the SPIRE Servers and Agents. They will also contain the private keys and certificates created to attest the Agents on the Servers with the [x509pop Node Attestor](https://github.com/spiffe/spire/blob/master/doc/plugin_server_nodeattestor_x509pop.md) plugin. Private keys and certificates are created at the initialization of the scenario using a Go application, the details of which are out of the scope of this tutorial.
+This tutorial's `nested-spire` main directory contains three subdirectories, one for each of the SPIRE deployments: `root`, `nestedA` and `nestedB`. These directories hold the configuration files for the SPIRE Servers and Agents. They will also contain the private keys and certificates created to attest the Agents on the Servers with the [x509pop Node Attestor](https://github.com/spiffe/spire/blob/main/doc/plugin_server_nodeattestor_x509pop.md) plugin. Private keys and certificates are created at the initialization of the scenario using a Go application, the details of which are out of the scope of this tutorial.
 
 ## Create a Shared Directory
 
@@ -71,7 +71,7 @@ We define all the services for the tutorial in the [docker-compose.yaml](docker-
 
 The same set of configurations are required for the `nestedB` SPIRE deployment but those changes are not described in the text to avoid needless repetition.
 
-SPIRE Agent and Server can be extended with a variety of [plugins](https://spiffe.io/spire/docs/extending/). The [UpstreamAuthority plugin](https://github.com/spiffe/spire/blob/master/doc/spire_server.md#built-in-plugins) type allows SPIRE Server to integrate with existing PKI systems. UpstreamAuthority plugins can sign certificates using CAs loaded from disk, third-party tools from AWS and Vault, and so on. Nested SPIRE deployments require the use of the [spire UpstreamAuthority plugin](https://github.com/spiffe/spire/blob/master/doc/plugin_server_upstreamauthority_spire.md) which uses an upstream SPIRE Server in the same trust domain to obtain intermediate signing certificates for SPIRE Server.
+SPIRE Agent and Server can be extended with a variety of [plugins](https://spiffe.io/spire/docs/extending/). The [UpstreamAuthority plugin](https://github.com/spiffe/spire/blob/main/doc/spire_server.md#built-in-plugins) type allows SPIRE Server to integrate with existing PKI systems. UpstreamAuthority plugins can sign certificates using CAs loaded from disk, third-party tools from AWS and Vault, and so on. Nested SPIRE deployments require the use of the [spire UpstreamAuthority plugin](https://github.com/spiffe/spire/blob/main/doc/plugin_server_upstreamauthority_spire.md) which uses an upstream SPIRE Server in the same trust domain to obtain intermediate signing certificates for SPIRE Server.
 
 The configuration file for the [nestedA-server](./nestedA/server/server.conf) includes the `spire` UpstreamAuthority plugin definition with the `root-server` as its upstream SPIRE Server.
 
@@ -117,7 +117,7 @@ The `nestedA-server` must be registered on the `root-server` to obtain its ident
        -ttl 3600
 ```
 
-The `-parentID` flag contains the SPIFFE ID of the `root-agent`. The SPIFFE ID of the `root-agent` is created by the [x509pop Node Attestor](https://github.com/spiffe/spire/blob/master/doc/plugin_server_nodeattestor_x509pop.md) plugin which defines the SPIFFE ID as `spiffe://<trust domain>/spire/agent/x509pop/<fingerprint>`. A `fingerprint()` function in the shell script calculates the SHA1 fingerprint of the certificate.
+The `-parentID` flag contains the SPIFFE ID of the `root-agent`. The SPIFFE ID of the `root-agent` is created by the [x509pop Node Attestor](https://github.com/spiffe/spire/blob/main/doc/plugin_server_nodeattestor_x509pop.md) plugin which defines the SPIFFE ID as `spiffe://<trust domain>/spire/agent/x509pop/<fingerprint>`. A `fingerprint()` function in the shell script calculates the SHA1 fingerprint of the certificate.
 The other point to highlight is the `-downstream` option. This option, when set, indicates that the entry describes a downstream SPIRE Server.
 
 ## Run the Scenario
