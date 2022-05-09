@@ -20,7 +20,7 @@ Before proceeding, review the following system requirements:
 
 # Part 1: Run Services
 
-The SPIRE Server and Agent can be configured to emit telemetry by using a dedicated `telemetry { ... }` section in their configuration files. Currently, SPIRE supports Prometheus, StatsD, DogStatsD, M3 and In-Memory as metrics collectors. In this tutorial we'll show how to configure Prometheus and StatsD but simple configuration examples for the other collectors can be found in the [telemetry](https://github.com/spiffe/spire/blob/master/doc/telemetry_config.md) docs of the SPIRE project.
+The SPIRE Server and Agent can be configured to emit telemetry by using a dedicated `telemetry { ... }` section in their configuration files. Currently, SPIRE supports Prometheus, StatsD, DogStatsD, M3 and In-Memory as metrics collectors. In this tutorial we'll show how to configure Prometheus and StatsD but simple configuration examples for the other collectors can be found in the [telemetry](https://github.com/spiffe/spire/blob/main/doc/telemetry_config.md) docs of the SPIRE project.
 
 **Note:** The configuration changes needed to enable Prometheus and StatsD metrics collection from SPIRE are shown as snippets in this tutorial. However, all of these settings have already been configured. You don't have to edit any configuration files.
 
