@@ -25,10 +25,12 @@ spec:
           # you prefer that waits for a service to be up. This image is built
           # from https://github.com/lqhl/wait-for-it
           image: gcr.io/spiffe-io/wait-for-it
+          imagePullPolicy: IfNotPresent
           args: ["-t", "30", "spire-server:8081"]
       containers:
         - name: spire-agent
           image: gcr.io/spiffe-io/spire-agent:1.2.1
+          imagePullPolicy: IfNotPresent
           args: ["-config", "/run/spire/config/agent.conf"]
           volumeMounts:
             - name: spire-config

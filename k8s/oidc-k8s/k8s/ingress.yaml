@@ -8,7 +8,7 @@ spec:
     - hosts:
         # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you will configure in the DNS
         - oidc-discovery.example.org
-      secretName: tls-secret
+      secretName: oidc-secret
   rules:
     # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you will configure in the DNS
     - host: oidc-discovery.example.org
