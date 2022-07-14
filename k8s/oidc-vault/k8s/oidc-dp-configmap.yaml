@@ -15,6 +15,6 @@ data:
         # TODO: Change MY_EMAIL_ADDRESS with your email
         email = "MY_EMAIL_ADDRESS"
     }
-    registration_api {
-        socket_path = "/run/spire/sockets/registration.sock"
+    server_api {
+      address = "unix:///tmp/spire-server/private/api.sock"
     }
