@@ -35,7 +35,7 @@ spec:
               mountPath: /run/spire/data
               readOnly: false
             - name: spire-server-socket
-              mountPath: /run/spire/sockets
+              mountPath: /tmp/spire-server/private
               readOnly: false
           livenessProbe:
             httpGet:
@@ -61,7 +61,7 @@ spec:
             name: spire-oidc-port
           volumeMounts:
           - name: spire-server-socket
-            mountPath: /run/spire/sockets
+            mountPath: /tmp/spire-server/private
             readOnly: true
           - name: spire-oidc-config
             mountPath: /run/spire/oidc/config/
