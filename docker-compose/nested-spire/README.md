@@ -113,8 +113,7 @@ The `nestedA-server` must be registered on the `root-server` to obtain its ident
        -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint root/agent/agent.crt.pem)" \
        -spiffeID "spiffe://example.org/nestedA" \
        -selector "docker:label:org.example.name:nestedA-server" \
-       -downstream \
-       -ttl 3600
+       -downstream
 ```
 
 The `-parentID` flag contains the SPIFFE ID of the `root-agent`. The SPIFFE ID of the `root-agent` is created by the [x509pop Node Attestor](https://github.com/spiffe/spire/blob/main/doc/plugin_server_nodeattestor_x509pop.md) plugin which defines the SPIFFE ID as `spiffe://<trust domain>/spire/agent/x509pop/<fingerprint>`. A `fingerprint()` function in the shell script calculates the SHA1 fingerprint of the certificate.
@@ -152,18 +151,16 @@ To test the scenario we create two workload registration entries, one entry for 
        -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint nestedA/agent/agent.crt.pem)" \
        -spiffeID "spiffe://example.org/nestedA/workload" \
        -selector "unix:uid:1001" \
-       -ttl 0
 
    # Workload for nestedB deployment
    docker-compose exec -T nestedB-server \
        /opt/spire/bin/spire-server entry create \
        -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint nestedB/agent/agent.crt.pem)" \
        -spiffeID "spiffe://example.org/nestedB/workload" \
-       -selector "unix:uid:1001" \
-       -ttl 0
+       -selector "unix:uid:1001"
 ```
 
-The examples use the `fingerprint path/to/nested-agent-cert` form again to show that the `-parentID` flag specifies the SPIFFE ID of the nested SPIRE Agent. The TTL flag value of zero indicates that the default value of 3600 seconds will be used. Finally, in both cases the unix selector assigns the SPIFFE ID to any process with a uid of 1001.
+The examples use the `fingerprint path/to/nested-agent-cert` form again to show that the `-parentID` flag specifies the SPIFFE ID of the nested SPIRE Agent. Finally, in both cases the unix selector assigns the SPIFFE ID to any process with a uid of 1001.
 
 Use the following Bash script to create the registration entries using the options just described:
 

@@ -47,8 +47,7 @@ docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedA-server \
     /opt/spire/bin/spire-server entry create \
     -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint "${PARENT_DIR}"/nestedA/agent/agent.crt.pem)" \
     -spiffeID "spiffe://example.org/nestedA/workload" \
-    -selector "unix:uid:1001" \
-    -ttl 0
+    -selector "unix:uid:1001"
 
 check-entry-is-propagated nestedA-agent spiffe://example.org/nestedA/workload
 
@@ -59,7 +58,6 @@ docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedB-server \
     /opt/spire/bin/spire-server entry create \
     -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint "${PARENT_DIR}"/nestedB/agent/agent.crt.pem)" \
     -spiffeID "spiffe://example.org/nestedB/workload" \
-    -selector "unix:uid:1001" \
-    -ttl 0
+    -selector "unix:uid:1001"
 
 check-entry-is-propagated nestedB-agent spiffe://example.org/nestedB/workload
