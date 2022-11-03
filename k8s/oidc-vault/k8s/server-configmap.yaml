@@ -28,8 +28,6 @@ data:
       # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you will configure in DNS
       jwt_issuer = "MY_DISCOVERY_DOMAIN"
 
-      default_x509_svid_ttl = "1h"
-      default_jwt_svid_ttl = "5m"
       ca_subject = {
         country = ["US"],
         organization = ["SPIFFE"],

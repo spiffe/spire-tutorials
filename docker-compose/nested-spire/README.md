@@ -113,9 +113,7 @@ The `nestedA-server` must be registered on the `root-server` to obtain its ident
        -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint root/agent/agent.crt.pem)" \
        -spiffeID "spiffe://example.org/nestedA" \
        -selector "docker:label:org.example.name:nestedA-server" \
-       -downstream \
-       -x509SVIDTTL 3600 \
-       -jwtSVIDTTL 3600
+       -downstream
 ```
 
 The `-parentID` flag contains the SPIFFE ID of the `root-agent`. The SPIFFE ID of the `root-agent` is created by the [x509pop Node Attestor](https://github.com/spiffe/spire/blob/main/doc/plugin_server_nodeattestor_x509pop.md) plugin which defines the SPIFFE ID as `spiffe://<trust domain>/spire/agent/x509pop/<fingerprint>`. A `fingerprint()` function in the shell script calculates the SHA1 fingerprint of the certificate.

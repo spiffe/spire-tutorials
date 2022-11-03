@@ -48,7 +48,6 @@ docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T spire-server \
     -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint "${PARENT_DIR}"/spire/agent/agent.crt.pem)" \
     -spiffeID "spiffe://example.org/workload-A" \
     -selector "unix:uid:1001" \
-    -x509SVIDTTL 120 \
-    -jwtSVIDTTL 120
+    -x509SVIDTTL 120
 
 check-entry-is-propagated spire-agent spiffe://example.org/workload
