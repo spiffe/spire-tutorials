@@ -82,7 +82,8 @@ docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T root-server \
     -spiffeID "spiffe://example.org/nestedA" \
     -selector "docker:label:org.example.name:nestedA-server" \
     -downstream \
-    -ttl 3600
+    -x509SVIDTTL 3600 \
+    -jwtSVIDTTL 3600
 
 check-entry-is-propagated root-agent spiffe://example.org/nestedA
 
@@ -93,7 +94,8 @@ docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T root-server \
     -spiffeID "spiffe://example.org/nestedB" \
     -selector "docker:label:org.example.name:nestedB-server" \
     -downstream \
-    -ttl 3600
+    -x509SVIDTTL 3600 \
+    -jwtSVIDTTL 3600
 
 check-entry-is-propagated root-agent spiffe://example.org/nestedB
 
