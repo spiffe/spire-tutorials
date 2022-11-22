@@ -69,11 +69,6 @@ spec:
           - name: spire-data
             mountPath: /run/spire/data
             readOnly: false
-          readinessProbe:
-            exec:
-              command: ["/bin/ps", "aux", " ||", "grep", "oidc-discovery-provider -config /run/spire/oidc/config/oidc-discovery-provider.conf"]
-            initialDelaySeconds: 5
-            periodSeconds: 5
       volumes:
         - name: spire-config
           configMap:
