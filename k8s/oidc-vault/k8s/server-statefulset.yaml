@@ -69,6 +69,14 @@ spec:
           - name: spire-data
             mountPath: /run/spire/data
             readOnly: false
+          readinessProbe:
+            httpGet:
+              path: /keys # TODO: Change this to /ready when using 1.5.2+
+              port: 8008
+            failureThreshold: 5
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
       volumes:
         - name: spire-config
           configMap:
