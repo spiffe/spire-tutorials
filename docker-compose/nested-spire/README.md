@@ -91,7 +91,7 @@ The Docker Compose definition for the `nestedA-server` service in the [docker-co
    nestedA-server:
      # Share the host pid namespace so this server can be attested by the root agent
      pid: "host"
-     image: ghcr.io/spiffe/spire-server:1.5.0
+     image: ghcr.io/spiffe/spire-server:1.5.1
      hostname: nestedA-server
      labels:
        # label to attest nestedA-server against root-agent
