@@ -18,3 +18,4 @@ data:
     server_api {
       address = "unix:///tmp/spire-server/private/api.sock"
     }
+    health_checks {}
