@@ -70,10 +70,13 @@ spec:
             mountPath: /run/spire/data
             readOnly: false
           readinessProbe:
-            exec:
-              command: ["/bin/ps", "aux", " ||", "grep", "oidc-discovery-provider -config /run/spire/oidc/config/oidc-discovery-provider.conf"]
+            httpGet:
+              path: /keys # TODO: Change this to /ready when using 1.5.2+
+              port: 8008
+            failureThreshold: 5
             initialDelaySeconds: 5
             periodSeconds: 5
+            timeoutSeconds: 3
       volumes:
         - name: spire-config
           configMap:
