@@ -18,7 +18,7 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: client
-          image: gcr.io/spiffe-io/spire-agent:1.2.3
+          image: ghcr.io/spiffe/spire-agent:1.5.1
           command: ["sleep"]
           args: ["1000000000"]
           volumeMounts:

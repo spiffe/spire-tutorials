@@ -1,4 +1,4 @@
-FROM gcr.io/spiffe-io/spire-agent:1.5.0 as spire
+FROM ghcr.io/spiffe/spire-agent:1.5.1 as spire
 
 COPY conf/agent.conf /opt/spire/conf/agent/agent.conf
 COPY conf/agent.key.pem /opt/spire/conf/agent/agent.key.pem
