@@ -19,8 +19,8 @@ spec:
       containers:
         - name: client
           image: ghcr.io/spiffe/spire-agent:1.5.1
-          command: ["sleep"]
-          args: ["1000000000"]
+          command: ["/opt/spire/bin/spire-agent"]
+          args: [ "api", "watch",  "-socketPath", "/run/spire/sockets/agent.sock" ]
           volumeMounts:
             - name: spire-agent-socket
               mountPath: /run/spire/sockets
