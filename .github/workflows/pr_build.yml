@@ -6,7 +6,7 @@ on:
   pull_request: {}
   workflow_dispatch: {}
 env:
-  GO_VERSION: 1.16.5
+  GO_VERSION: 1.19.4
   CHANGE_MINIKUBE_NONE_USER: true
   TERM: xterm
 jobs:
