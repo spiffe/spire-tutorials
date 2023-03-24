@@ -4,7 +4,7 @@
 This tutorial builds on the [SPIRE Envoy-X.509 Tutorial](../envoy-x509/) to demonstrate how to use SPIRE to perform JWT SVID authentication on a workload's behalf instead of X.509 SVID authentication. The changes required to implement JWT SVID authentication are shown here as a delta to that tutorial, so you should run, or at least read through, the X.509 tutorial first.
 
 
-To illustrate JWT authentication, we add sidecars to each of the services used in the Envoy X.509 tutorial. Each sidecar acts as an [external authorization filter](https://www.envoyproxy.io/docs/envoy/v1.14.1/intro/arch_overview/security/ext_authz_filter#arch-overview-ext-authz) for Envoy.
+To illustrate JWT authentication, we add sidecars to each of the services used in the Envoy X.509 tutorial. Each sidecar acts as an [external authorization filter](https://www.envoyproxy.io/docs/envoy/v1.25.1/intro/arch_overview/security/ext_authz_filter#arch-overview-ext-authz) for Envoy.
 
 
 ![SPIRE Envoy integration diagram][diagram]

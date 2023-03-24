@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: envoy
-        image: envoyproxy/envoy-alpine:v1.14.1
+        image: envoyproxy/envoy:v1.25.1
         imagePullPolicy: Always
         args: ["-l", "debug", "--local-address-ip-version", "v4", "-c", "/run/envoy/envoy.yaml"]
         ports:
