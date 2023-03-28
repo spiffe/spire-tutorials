@@ -60,8 +60,10 @@ static_resources:
             tls_certificate_sds_secret_configs:
             - name: "spiffe://example.org/ns/default/sa/default/backend"
               sds_config:
+                resource_api_version: V3
                 api_config_source:
                   api_type: GRPC
+                  transport_api_version: V3
                   grpc_services:
                     envoy_grpc:
                       cluster_name: spire_agent
@@ -108,4 +110,4 @@ static_resources:
             address:	
               socket_address:	
                 address: 127.0.0.1
-                port_value: 9010
+                port_value: 80

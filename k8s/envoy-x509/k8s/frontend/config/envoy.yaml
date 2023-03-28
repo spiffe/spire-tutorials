@@ -66,8 +66,8 @@ static_resources:
         - endpoint:	
             address:	
               socket_address:	
-                address: 127.0.0.1	
-                port_value: 9011
+                address: backend-envoy
+                port_value: 9001
     transport_socket:
       name: envoy.transport_sockets.tls
       typed_config:
