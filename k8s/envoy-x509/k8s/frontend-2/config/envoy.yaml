@@ -86,8 +86,10 @@ static_resources:
           combined_validation_context:
             # validate the SPIFFE ID of the server (recommended)
             default_validation_context:
-              match_subject_alt_names:
-                exact: "spiffe://example.org/ns/default/sa/default/backend"
+              match_typed_subject_alt_names:
+              - san_type: URI
+                matcher:
+                  exact: "spiffe://example.org/ns/default/sa/default/backend"
             validation_context_sds_secret_config:
               name: "spiffe://example.org"
               sds_config:

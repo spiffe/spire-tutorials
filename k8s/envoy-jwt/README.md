@@ -125,12 +125,14 @@ Next, this setup requires an External Authorization Filter in the Envoy configur
 
 ```console
 http_filters:
-- name: envoy.ext_authz
-  config:
+- name: envoy.filters.http.ext_authz
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+    transport_api_version: V3
     grpc_service:
-       envoy_grpc:
-       cluster_name: ext-authz
-       timeout: 0.5s
+      envoy_grpc:
+        cluster_name: ext-authz
+      timeout: 0.5s
 ```
 
 Here’s the corresponding cluster configuration for the External Authorization Filter:
@@ -140,10 +142,15 @@ Here’s the corresponding cluster configuration for the External Authorization 
   connect_timeout: 1s
   type: strict_dns
   http2_protocol_options: {}
-  hosts:
-    - socket_address:
-        address: 127.0.0.1
-        port_value: 9010
+  load_assignment:	
+    cluster_name: ext-authz
+    endpoints:	
+    - lb_endpoints:	
+      - endpoint:	
+          address:	
+            socket_address:	
+              address: 127.0.0.1
+              port_value: 9010
 ```
 
 

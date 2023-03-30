@@ -6,7 +6,7 @@
 This tutorial builds on the [SPIRE Envoy-JWT Tutorial](../envoy-jwt/README.md) to demonstrate how to combine SPIRE, Envoy and OPA to perform JWT SVID authentication and request authorization. The changes required to implement request authorization with OPA are shown here as a delta to that tutorial, so you should run, or at least read through, the SPIRE Envoy-JWT tutorial first.
 
 
-To illustrate request authorization with OPA, we add a new sidecar to the backend service used in the SPIRE Envoy JWT tutorial. The new sidecar acts as a new [External Authorization Filter](https://www.envoyproxy.io/docs/envoy/v1.14.1/intro/arch_overview/security/ext_authz_filter#arch-overview-ext-authz) for Envoy.
+To illustrate request authorization with OPA, we add a new sidecar to the backend service used in the SPIRE Envoy JWT tutorial. The new sidecar acts as a new [External Authorization Filter](https://www.envoyproxy.io/docs/envoy/v1.25.1/intro/arch_overview/security/ext_authz_filter#arch-overview-ext-authz) for Envoy.
 
 
 ![SPIRE Envoy-JWT with OPA integration diagram][diagram]
@@ -50,12 +50,12 @@ The solution applied in this tutorial consists of adding a new External Authoriz
 ## Update Deployments
 
 In order to let OPA authorize or reject requests coming to the `backend` service it is necessary to add OPA as a sidecar to the deployment.
-We use the `openpolicyagent/opa:0.24.0-envoy-5` image which extends OPA with a gRPC server that implements the Envoy External Authorization API so OPA can communicate policy decisions with Envoy. The new container is added and configured as follows in [`backend-deployment.yaml`](k8s/backend/backend-deployment.yaml):
+We use the `openpolicyagent/opa:0.50.2-envoy` image which extends OPA with a gRPC server that implements the Envoy External Authorization API so OPA can communicate policy decisions with Envoy. The new container is added and configured as follows in [`backend-deployment.yaml`](k8s/backend/backend-deployment.yaml):
 
 
 ```console
 - name: opa
-  image: openpolicyagent/opa:0.24.0-envoy-5
+  image: openpolicyagent/opa:0.50.2-envoy
   imagePullPolicy: IfNotPresent
   ports:
     - name: opa-envoy
@@ -64,15 +64,15 @@ We use the `openpolicyagent/opa:0.24.0-envoy-5` image which extends OPA with a g
     - name: opa-api-port
       containerPort: 8181
       protocol: TCP
-   args:
-     - "run"
-     - "--server"
-     - "--config-file=/run/opa/opa-config.yaml"
-     - "/run/opa/opa-policy.rego"
-   volumeMounts:
-     - name: backend-opa-policy
-       mountPath: /run/opa
-       readOnly: true
+  args:
+    - "run"
+    - "--server"
+    - "--config-file=/run/opa/opa-config.yaml"
+    - "/run/opa/opa-policy.rego"
+  volumeMounts:
+    - name: backend-opa-policy
+      mountPath: /run/opa
+      readOnly: true
 ```
 
 The ConfigMap `backend-opa-policy` needs to be added into the `volumes` section, like this:
@@ -171,11 +171,12 @@ Envoy needs to know how to contact the OPA Agent just configured to perform the 
 ```console
 - name: envoy.filters.http.ext_authz
   typed_config:
-    "@type": type.googleapis.com/envoy.config.filter.http.ext_authz.v2.ExtAuthz
+    "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
     with_request_body:
       max_request_bytes: 8192
       allow_partial_message: true
    failure_mode_allow: false
+   transport_api_version: V3
    grpc_service:
       google_grpc:
         target_uri: 127.0.0.1:8182

@@ -51,26 +51,26 @@ The new container is added and configured as follows in [`backend-deployment.yam
 
 ```console
 - name: opa
-   image: openpolicyagent/opa:0.24.0-envoy-5
-   imagePullPolicy: Always
-   ports:
-      - name: opa-envoy
+  image: openpolicyagent/opa:0.50.2-envoy
+  imagePullPolicy: IfNotPresent
+  ports:
+    - name: opa-envoy
       containerPort: 8182
       protocol: TCP
-      - name: opa-api-port
+    - name: opa-api-port
       containerPort: 8181
       protocol: TCP
-   args:
-      - "run"
-      - "--server"
-      - "--config-file=/run/opa/opa-config.yaml"
-      - "/run/opa/opa-policy.rego"
-   volumeMounts:
-      - name: backend-opa-policy
+  args:
+    - "run"
+    - "--server"
+    - "--config-file=/run/opa/opa-config.yaml"
+    - "/run/opa/opa-policy.rego"
+  volumeMounts:
+    - name: backend-opa-policy
       mountPath: /run/opa
       readOnly: true
 ```
-One thing to note is the use of the `openpolicyagent/opa:0.24.0-envoy-5` image. This image extends OPA with a gRPC server that implements the Envoy External Authorization API so OPA can communicate policy decisions with Envoy.
+One thing to note is the use of the `openpolicyagent/opa:0.50.2-envoy` image. This image extends OPA with a gRPC server that implements the Envoy External Authorization API so OPA can communicate policy decisions with Envoy.
 
 The ConfigMap `backend-opa-policy` needs to be added into the `volumes` section, like this:
 
@@ -192,7 +192,8 @@ Finally, this setup requires an External Authorization Filter that connects to t
 ```console
 - name: envoy.ext_authz
   typed_config:
-    "@type": type.googleapis.com/envoy.config.filter.http.ext_authz.v2.ExtAuthz
+    "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+    transport_api_version: V3
     with_request_body:
       max_request_bytes: 8192
       allow_partial_message: true
