@@ -35,6 +35,27 @@ $ bash scripts/pre-set-env.sh
 
 The script will create all the resources needed for the SPIRE Server and SPIRE Agent to be available in the cluster.
 
+## Expternal IP support
+
+This tutorial requires to have a LoadBalancer with external IP, this can be accomplished using [metallb](https://metallb.universe.tf/)
+
+```console
+$ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
+```
+
+Wait until metallb started
+```console
+$ kubectl wait --namespace metallb-system \
+                --for=condition=ready pod \
+                --selector=app=metallb \
+                --timeout=90s
+```
+
+Apply metallb configurations
+
+```console
+$ kubectl apply -f metallb-config.yaml
+```
 
 # Envoy SDS Support
 

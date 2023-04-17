@@ -38,6 +38,27 @@ The script will create all the resources needed for the SPIRE Server and SPIRE A
 
 **Note:** The configuration changes needed to enable Envoy and OPA to work with SPIRE are shown as snippets in this tutorial. However, all of these settings have already been configured. You don't have to edit any configuration files.
 
+## Expternal IP support
+
+This tutorial requires to have a LoadBalancer with external IP, this can be accomplished using [metallb](https://metallb.universe.tf/)
+
+```console
+$ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
+```
+
+Wait until metallb started
+```console
+$ kubectl wait --namespace metallb-system \
+                --for=condition=ready pod \
+                --selector=app=metallb \
+                --timeout=90s
+```
+
+Apply metallb configurations
+
+```console
+$ kubectl apply -f ../envoy-x509/metallb-config.yaml
+```
 
 # Part 1: Deploy Updated and New Resources
 

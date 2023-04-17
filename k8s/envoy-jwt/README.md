@@ -38,6 +38,27 @@ $ bash scripts/pre-set-env.sh
 
 The script will create all the resources needed for the SPIRE Server and SPIRE Agent to be available in the cluster and then will create all the resources for the SPIRE Envoy X.509 tutorial, which is the base scenario for this SPIRE Envoy JWT Tutorial.
 
+## Expternal IP support
+
+This tutorial requires to have a LoadBalancer with external IP, this can be accomplished using [metallb](https://metallb.universe.tf/)
+
+```console
+$ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
+```
+
+Wait until metallb started
+```console
+$ kubectl wait --namespace metallb-system \
+                --for=condition=ready pod \
+                --selector=app=metallb \
+                --timeout=90s
+```
+
+Apply metallb configurations
+
+```console
+$ kubectl apply -f ../envoy-x509/metallb-config.yaml
+```
 
 # Part 1: Deploy Updated and New Resources
 
