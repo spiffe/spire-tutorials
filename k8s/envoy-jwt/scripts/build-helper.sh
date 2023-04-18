@@ -7,9 +7,6 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 EXAMPLEDIR="$(dirname "$DIR")"
 K8SDIR="$(dirname "$EXAMPLEDIR")"
-echo $DIR
-echo $EXAMPLEDIR
-echo $K8SDIR
 
 DOCKER_IMAGE="envoy-jwt-auth-helper"
 SERVICE_VERSION="1.0.0"
