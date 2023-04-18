@@ -16,8 +16,8 @@ echo "Building ${DOCKER_IMAGE}"
 
 case $1 in
 "minikube") 
-	echo "Pushing into minikube"
-	minikube image push $DOCKER_IMAGE:latest;;
+	echo "Loading image into minikube"
+	minikube image load $DOCKER_IMAGE:latest;;
 "kind")
 	echo "Load image into kind"
 	kind load docker-image $DOCKER_IMAGE:latest;;
