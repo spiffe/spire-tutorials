@@ -22,23 +22,7 @@ In this tutorial you will learn how to:
 * Add an External Authorization Filter to the Envoy configuration that connects Envoy to OPA
 * Test successful JWT authentication using SPIRE plus OPA authorization
 
-
 # Prerequisites
-
-Before proceeding, review the following:
-
-* You'll need access to the Kubernetes environment configured when going through the [SPIRE Envoy-JWT Tutorial](../envoy-jwt/README.md). Optionally, you can create the Kubernetes environment with the `pre-set-env.sh` script described just below.
-* Required YAML files for this tutorial can be found in the `k8s/envoy-jwt-opa` directory in https://github.com/spiffe/spire-tutorials. If you didn't already clone the spire-tutorials repository please do so now.
-
-If the Kubernetes _Configure Envoy to Perform JWT SVID Authentication_ tutorial environment is not available, you can use the following script to create it and use it as starting point for this tutorial. From the `k8s/envoy-jwt-opa` directory, run the following Bash script:
-
-```console
-$ bash scripts/pre-set-env.sh
-```
-
-The script will create all the resources needed for the SPIRE Server and SPIRE Agent to be available in the cluster and then will create all the resources for the SPIRE Envoy JWT tutorial, which is the base scenario for this SPIRE Envoy JWT with OPA Tutorial.
-
-**Note:** The configuration changes needed to enable Envoy and OPA to work with SPIRE are shown as snippets in this tutorial. However, all of these settings have already been configured. You don't have to edit any configuration files.
 
 ## Expternal IP support
 
@@ -61,6 +45,32 @@ Apply metallb configurations
 ```console
 $ kubectl apply -f ../envoy-x509/metallb-config.yaml
 ```
+
+## Auth helper image
+
+An external Authorization is implemented using [Envoy-jwt-auth-helper](../envoy-jwt-auth-helper),
+An script is provided to facilitate building and import using `kind` or `minikube`
+
+``` console
+$ bash ./scripts/build-helper.sh kind
+```
+
+## Previous SPIRE instalation
+
+Before proceeding, review the following:
+
+* You'll need access to the Kubernetes environment configured when going through the [SPIRE Envoy-JWT Tutorial](../envoy-jwt/README.md). Optionally, you can create the Kubernetes environment with the `pre-set-env.sh` script described just below.
+* Required YAML files for this tutorial can be found in the `k8s/envoy-jwt-opa` directory in https://github.com/spiffe/spire-tutorials. If you didn't already clone the spire-tutorials repository please do so now.
+
+If the Kubernetes _Configure Envoy to Perform JWT SVID Authentication_ tutorial environment is not available, you can use the following script to create it and use it as starting point for this tutorial. From the `k8s/envoy-jwt-opa` directory, run the following Bash script:
+
+```console
+$ bash scripts/pre-set-env.sh
+```
+
+The script will create all the resources needed for the SPIRE Server and SPIRE Agent to be available in the cluster and then will create all the resources for the SPIRE Envoy JWT tutorial, which is the base scenario for this SPIRE Envoy JWT with OPA Tutorial.
+
+**Note:** The configuration changes needed to enable Envoy and OPA to work with SPIRE are shown as snippets in this tutorial. However, all of these settings have already been configured. You don't have to edit any configuration files.
 
 # Part 1: Deploy Updated and New Resources
 
@@ -239,13 +249,13 @@ The first test will demonstrate how a request that satisfies the policy allows f
 $ kubectl get services
 
 NAME            TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)          AGE
-backend-envoy   ClusterIP      None          <none>           9001/TCP         6m53s
-frontend        LoadBalancer   10.8.14.117   35.222.164.221   3000:32586/TCP   6m52s
-frontend-2      LoadBalancer   10.8.7.57     35.222.190.182   3002:32056/TCP   6m53s
-kubernetes      ClusterIP      10.8.0.1      <none>           443/TCP          59m
+backend-envoy   ClusterIP      None            <none>           9001/TCP         5m56s
+frontend        LoadBalancer   10.96.194.108   172.18.255.200   3000:30824/TCP   5m56s
+frontend-2      LoadBalancer   10.96.61.216    172.18.255.201   3002:31960/TCP   5m56s
+kubernetes      ClusterIP      10.96.0.1       <none>           443/TCP          14m
 ```
 
-The `frontend` service will be available at the `EXTERNAL-IP` value and port `3000`, which was configured for our container. In the sample output shown above, the URL to navigate to is `http://35.222.164.221:3000`. Open your browser and navigate to the IP address shown for `frontend` in your environment, adding the port `:3000`. Once the page is loaded, you'll see the account details for user _Jacob Marley_.
+The `frontend` service will be available at the `EXTERNAL-IP` value and port `3000`, which was configured for our container. In the sample output shown above, the URL to navigate to is `http://172.18.255.200:3000`. Open your browser and navigate to the IP address shown for `frontend` in your environment, adding the port `:3000`. Once the page is loaded, you'll see the account details for user _Jacob Marley_.
 
 ![Frontend][frontend-view]
 
@@ -307,7 +317,7 @@ Note the presence of the `authorization` header containing the JWT. As explained
 
 ## Testing Invalid Requests
 
-On the other hand, when you connect to the URL for the `frontend-2` service (e.g. `http://35.222.190.182:3002`), the browser only displays the title without any account details. This is because the SPIFFE ID of the `frontend-2` service (`spiffe://example.org/ns/default/sa/default/frontend-2`) does not satisfy the policy for the OPA Agent.
+On the other hand, when you connect to the URL for the `frontend-2` service (e.g. `http://172.18.255.201:3002`), the browser only displays the title without any account details. This is because the SPIFFE ID of the `frontend-2` service (`spiffe://example.org/ns/default/sa/default/frontend-2`) does not satisfy the policy for the OPA Agent.
 
 ![Frontend-2-no-details][frontend-2-view-no-details]
 
@@ -337,13 +347,13 @@ svc_spiffe_id == "spiffe://example.org/ns/default/sa/default/frontend-2"
 
 Save the changes and exit. The `backend-update-policy.sh` script resumes. The script applies new version of the ConfigMap and then restarts the `backend` pod to pick up the new rule.
 Wait some seconds for the deployment to propagate before trying to view the `frontend-2` service in your browser again.
-Once the pod is ready, refresh the browser using the correct URL for the `frontend-2` service (e.g. `http://35.222.190.182:3002`). As a result, now the page shows the account details for user _Alex Fergus_.
+Once the pod is ready, refresh the browser using the correct URL for the `frontend-2` service (e.g. `http://172.18.255.201:3002`). As a result, now the page shows the account details for user _Alex Fergus_.
 
 ![Frontend-2][frontend-2-view]
 
 [frontend-2-view]: images/frontend-2_view.png "Frontend-2 view"
 
-On the other hand, if you now connect to the URL for the `frontend` service (e.g. `http://35.222.164.221:3000`), the browser only displays the title without any account details. This is the expected behaviour as the policy was updated and now the SPIFFE ID of the `frontend` service does not satisfy the policy anymore.
+On the other hand, if you now connect to the URL for the `frontend` service (e.g. `http://172.18.255.200:3000`), the browser only displays the title without any account details. This is the expected behaviour as the policy was updated and now the SPIFFE ID of the `frontend` service does not satisfy the policy anymore.
 
 
 # Cleanup

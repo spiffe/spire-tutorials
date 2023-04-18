@@ -1,0 +1,6 @@
+# Binary
+envoy-jwt-auth-helper
+
+# Editor specific configuration
+.idea
+.vscode

@@ -26,7 +26,7 @@ spec:
           mountPath: /run/spire/sockets
           readOnly: true
       - name: auth-helper
-        image: marcosdy/envoy-jwt-auth-helper:1.0.0
+        image: envoy-jwt-auth-helper:latest
         imagePullPolicy: IfNotPresent
         args:  ["-config", "/run/envoy-jwt-auth-helper/config/envoy-jwt-auth-helper.conf"]
         ports:
