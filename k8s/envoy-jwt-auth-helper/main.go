@@ -8,8 +8,8 @@ import (
 	"strconv"
 
 	auth "github.com/envoyproxy/go-control-plane/envoy/service/auth/v3"
-	authExternal "github.com/scytaleio/envoy-jwt-auth-helper/pkg/auth"
-	"github.com/scytaleio/envoy-jwt-auth-helper/pkg/config"
+	authExternal "github.com/spiffe/envoy-jwt-auth-helper/pkg/auth"
+	"github.com/spiffe/envoy-jwt-auth-helper/pkg/config"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"google.golang.org/grpc"
 )

@@ -1,4 +1,4 @@
-module github.com/scytaleio/envoy-jwt-auth-helper
+module github.com/spiffe/envoy-jwt-auth-helper
 
 go 1.20
 
@@ -14,7 +14,6 @@ require (
 
 require (
 	github.com/Microsoft/go-winio v0.6.0 // indirect
-	github.com/cncf/udpa/go v0.0.0-20220112060539-c52dc94e7fbe // indirect
 	github.com/cncf/xds/go v0.0.0-20230310173818-32f1caf87195 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.10.1 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
@@ -27,5 +26,4 @@ require (
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
-	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 )

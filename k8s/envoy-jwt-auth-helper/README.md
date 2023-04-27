@@ -40,17 +40,6 @@ jwt_mode = "jwt_svid_validator"
 audience = "spiffe://example.org/myservice"
 ```
 
-## Build docker image:
-```console
-./build-images
-```
-
-To push the image to the scytale registry
-
-```console
-./build-images push
-```
-
 ## As Envoy External Authorization filter
 
 Include an External Authorization Filter in the Envoy configuration that connects to the service. This is accomplish by adding a new HTTP filter:
