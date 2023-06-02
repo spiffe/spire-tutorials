@@ -4,7 +4,7 @@
 This tutorial builds on the [SPIRE Envoy-X.509 Tutorial](../envoy-x509/) to demonstrate how to use SPIRE to perform JWT SVID authentication on a workload's behalf instead of X.509 SVID authentication. The changes required to implement JWT SVID authentication are shown here as a delta to that tutorial, so you should run, or at least read through, the X.509 tutorial first.
 
 
-To illustrate JWT authentication, we add sidecars to each of the services used in the Envoy X.509 tutorial. Each sidecar acts as an [external authorization filter](https://www.envoyproxy.io/docs/envoy/v1.14.1/intro/arch_overview/security/ext_authz_filter#arch-overview-ext-authz) for Envoy.
+To illustrate JWT authentication, we add sidecars to each of the services used in the Envoy X.509 tutorial. Each sidecar acts as an [external authorization filter](https://www.envoyproxy.io/docs/envoy/v1.25.1/intro/arch_overview/security/ext_authz_filter#arch-overview-ext-authz) for Envoy.
 
 
 ![SPIRE Envoy integration diagram][diagram]
@@ -24,6 +24,39 @@ In this tutorial you will learn how to:
 
 # Prerequisites
 
+## External IP support
+
+This tutorial requires a LoadBalancer that can assign an external IP (e.g., [metallb](https://metallb.universe.tf/))
+
+```console
+$ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
+```
+
+Wait until metallb has started
+```console
+$ kubectl wait --namespace metallb-system \
+                --for=condition=ready pod \
+                --selector=app=metallb \
+                --timeout=90s
+```
+
+Apply metallb configuration
+
+```console
+$ kubectl apply -f ../envoy-x509/metallb-config.yaml
+```
+
+## Auth helper image
+
+An External Authorization filter is implemented using [Envoy-jwt-auth-helper](../envoy-jwt-auth-helper),
+An script is provided to facilitate building and import using `kind` or `minikube`
+
+``` console
+$ bash ./scripts/build-helper.sh kind
+```
+
+## Previous SPIRE instalation
+
 Before proceeding, review the following:
 
 * You'll need access to the Kubernetes environment configured when going through the [SPIRE Envoy-X.509 Tutorial](../envoy-x509/README.md). Optionally, you can create the Kubernetes environment with the `pre-set-env.sh` script described just below.
@@ -37,7 +70,6 @@ $ bash scripts/pre-set-env.sh
 ```
 
 The script will create all the resources needed for the SPIRE Server and SPIRE Agent to be available in the cluster and then will create all the resources for the SPIRE Envoy X.509 tutorial, which is the base scenario for this SPIRE Envoy JWT Tutorial.
-
 
 # Part 1: Deploy Updated and New Resources
 
@@ -97,7 +129,7 @@ This new `auth-helper` service must be added as a sidecar and must be configured
 
 ```console
 - name: auth-helper
-  image: envoy-jwt-auth-helper:1.0.0
+  image: envoy-jwt-auth-helper:latest
   imagePullPolicy: IfNotPresent
   args:  ["-config", "/run/envoy-jwt-auth-helper/config/envoy-jwt-auth-helper.conf"]
   ports:
@@ -125,12 +157,14 @@ Next, this setup requires an External Authorization Filter in the Envoy configur
 
 ```console
 http_filters:
-- name: envoy.ext_authz
-  config:
+- name: envoy.filters.http.ext_authz
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+    transport_api_version: V3
     grpc_service:
-       envoy_grpc:
-       cluster_name: ext-authz
-       timeout: 0.5s
+      envoy_grpc:
+        cluster_name: ext-authz
+      timeout: 0.5s
 ```
 
 Here’s the corresponding cluster configuration for the External Authorization Filter:
@@ -140,10 +174,15 @@ Here’s the corresponding cluster configuration for the External Authorization 
   connect_timeout: 1s
   type: strict_dns
   http2_protocol_options: {}
-  hosts:
-    - socket_address:
-        address: 127.0.0.1
-        port_value: 9010
+  load_assignment:	
+    cluster_name: ext-authz
+    endpoints:	
+    - lb_endpoints:	
+      - endpoint:	
+          address:	
+            socket_address:	
+              address: 127.0.0.1
+              port_value: 9010
 ```
 
 
@@ -219,19 +258,19 @@ The first set of testing will demonstrate how valid JWT-SVIDs allow for the disp
 $ kubectl get services
 
 NAME            TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)          AGE
-backend-envoy   ClusterIP      None          <none>           9001/TCP         6m53s
-frontend        LoadBalancer   10.8.14.117   35.222.164.221   3000:32586/TCP   6m52s
-frontend-2      LoadBalancer   10.8.7.57     35.222.190.182   3002:32056/TCP   6m53s
-kubernetes      ClusterIP      10.8.0.1      <none>           443/TCP          59m
+backend-envoy   ClusterIP      None            <none>           9001/TCP         10m
+frontend        LoadBalancer   10.96.226.176   172.18.255.200   3000:32314/TCP   10m
+frontend-2      LoadBalancer   10.96.33.198    172.18.255.201   3002:31797/TCP   10m
+kubernetes      ClusterIP      10.96.0.1       <none>           443/TCP          55m
 ```
 
-The `frontend` service will be available at the `EXTERNAL-IP` value and port `3000`, which was configured for our container. In the sample output shown above, the URL to navigate is `http://35.222.164.221:3000`. Open your browser and navigate to the IP address shown for `frontend` in your environment, adding the port `:3000`. Once the page is loaded, you'll see the account details for user _Jacob Marley_. 
+The `frontend` service will be available at the `EXTERNAL-IP` value and port `3000`, which was configured for our container. In the sample output shown above, the URL to navigate is `http://172.18.255.200:3000`. Open your browser and navigate to the IP address shown for `frontend` in your environment, adding the port `:3000`. Once the page is loaded, you'll see the account details for user _Jacob Marley_. 
 
 ![Frontend][frontend-view]
 
 [frontend-view]: images/frontend_view.png "Frontend view"
 
-On the other hand, when you connect to the URL for the `frontend-2` service (e.g. `http://35.222.190.182:3002`), the browser only displays the title without any account details. This is because the `frontend-2` service was not updated to include a JWT token in the request. The lack of a valid token on the request makes the Envoy instance in front of the `backend` reject it.
+On the other hand, when you connect to the URL for the `frontend-2` service (e.g. `http://172.18.255.201:3002`), the browser only displays the title without any account details. This is because the `frontend-2` service was not updated to include a JWT token in the request. The lack of a valid token on the request makes the Envoy instance in front of the `backend` reject it.
 
 ![Frontend-2-no-details][frontend-2-view-no-details]
 

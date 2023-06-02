@@ -19,6 +19,9 @@ trap clean-env EXIT
 echo "${bb}Preparing environment...${nm}"
 clean-env
 
+# Build helper image
+bash "${DIR}"/scripts/build-helper.sh minikube
+
 # Creates Envoy JWT scenario
 bash "${DIR}"/scripts/set-env.sh
 

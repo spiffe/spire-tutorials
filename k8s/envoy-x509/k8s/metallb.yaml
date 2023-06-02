@@ -1,0 +1,12 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: sandbox
+  namespace: metallb-system
+spec:
+  addresses:
+  # On the other hand, the sandbox environment uses private IP space,
+  # which is free and plentiful. We give this address pool a ton of IPs,
+  # so that developers can spin up as many sandboxes as they need.
+  - 192.168.144.0/20
+
