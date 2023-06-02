@@ -42,6 +42,23 @@ data:
                     route:
                       cluster: local_service
               http_filters:
+              - name: envoy.filters.http.rbac
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.rbac.v3.RBAC
+                  rules:
+                    action: ALLOW
+                    policies:
+                      "general-rules":
+                        permissions:
+                            - and_rules:
+                                rules:
+                                  - header: { name: ":method", exact_match: "GET" }
+                                  - url_path:
+                                      path: { prefix: "/profiles" }
+                        principals:
+                        - authenticated:
+                            principal_name:
+                              exact: "spiffe://example.org/ns/default/sa/default/frontend"
               - name: envoy.filters.http.router
                 typed_config: 
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router

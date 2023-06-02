@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: envoy
-        image: envoyproxy/envoy-alpine:v1.14.1
+        image: envoyproxy/envoy:v1.25.1
         imagePullPolicy: IfNotPresent
         args: ["-l", "debug", "--local-address-ip-version", "v4", "-c", "/run/envoy/envoy.yaml"]
         ports:
@@ -28,7 +28,7 @@ spec:
           mountPath: /run/spire/sockets
           readOnly: true
       - name: auth-helper
-        image: us.gcr.io/scytale-registry/envoy-jwt-auth-helper@sha256:e55ce5fd42f13c5475b285a848c5f83bc4a335a93d7f934d3ac884920045fc96
+        image: envoy-jwt-auth-helper:latest
         imagePullPolicy: IfNotPresent
         args:  ["-config", "/run/envoy-jwt-auth-helper/config/envoy-jwt-auth-helper.conf"]
         ports:
