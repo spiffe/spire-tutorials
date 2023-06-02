@@ -24,15 +24,15 @@ In this tutorial you will learn how to:
 
 # Prerequisites
 
-## Expternal IP support
+## External IP support
 
-This tutorial requires to have a LoadBalancer with external IP, this can be accomplished using [metallb](https://metallb.universe.tf/)
+This tutorial requires a LoadBalancer that can assign an external IP (e.g., [metallb](https://metallb.universe.tf/))
 
 ```console
 $ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
 ```
 
-Wait until metallb started
+Wait until metallb has started
 ```console
 $ kubectl wait --namespace metallb-system \
                 --for=condition=ready pod \
@@ -40,7 +40,7 @@ $ kubectl wait --namespace metallb-system \
                 --timeout=90s
 ```
 
-Apply metallb configurations
+Apply metallb configuration
 
 ```console
 $ kubectl apply -f ../envoy-x509/metallb-config.yaml
@@ -48,7 +48,7 @@ $ kubectl apply -f ../envoy-x509/metallb-config.yaml
 
 ## Auth helper image
 
-An external Authorization is implemented using [Envoy-jwt-auth-helper](../envoy-jwt-auth-helper),
+An External Authorization filter is implemented using [Envoy-jwt-auth-helper](../envoy-jwt-auth-helper),
 An script is provided to facilitate building and import using `kind` or `minikube`
 
 ``` console
