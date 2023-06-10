@@ -26,11 +26,6 @@ spec:
           # from https://github.com/lqhl/wait-for-it
           image: cgr.dev/chainguard/wait-for-it
           args: ["-t", "30", "spire-server:8081"]
-          env:
-          - name: MY_NODE_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
       containers:
         - name: spire-agent
           image: ghcr.io/spiffe/spire-agent:1.5.1
