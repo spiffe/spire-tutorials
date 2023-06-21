@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: spire-server-exposed-0
+  namespace: spire
+spec:
+  type: LoadBalancer
+  selector:
+    statefulset.kubernetes.io/pod-name: spire-server-0
+  ports:
+  - protocol: TCP
+    port: 8082
+    targetPort: 8081
