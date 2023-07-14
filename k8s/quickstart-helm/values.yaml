@@ -1,0 +1,54 @@
+# You can enable config/features that affect all services here.
+global:
+  k8s:
+    # -- This is the value of your clusters `kubeadm init --service-dns-domain` flag
+    clusterDomain: cluster.local
+  spire:
+    # -- The name of the Kubernetes cluster (`kubeadm init --service-dns-domain`)
+    clusterName: demo-cluster
+    # -- The trust domain to be used for the SPIFFE identifiers
+    trustDomain: example.org
+    # -- Set the jwt issuer
+    jwtIssuer: oidc-discovery.example.org
+    # -- Override all instances of bundleConfigMap
+    bundleConfigMap: ""
+
+    image:
+      # -- Override all Spire image registries at once
+      registry: ""
+
+#  telemetry:
+#    prometheus:
+#      enabled: true
+#      podMonitor:
+#        enabled: true
+#        # -- Allows to install the PodMonitor in another namespace then the spire components are installed into.
+#        namespace: "kube-prometheus-system"
+#        labels: {}
+
+# subcharts
+spire-server:
+  # -- Enables deployment of SPIRE Server
+  enabled: true
+  nameOverride: server
+
+  controllerManager:
+    # -- Enables deployment of Controller Manager
+    enabled: true
+
+spire-agent:
+  # -- Enables deployment of SPIRE Agent(s)
+  enabled: true
+  nameOverride: agent
+
+spiffe-csi-driver:
+  # -- Enables deployment of CSI driver
+  enabled: true
+
+spiffe-oidc-discovery-provider:
+  # -- Enables deployment of OIDC discovery provider
+  enabled: false
+
+tornjak-frontend:
+  # -- Enables deployment of Tornjak frontend/UI (Not for production)
+  enabled: false
