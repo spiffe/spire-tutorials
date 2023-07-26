@@ -10,7 +10,6 @@ import (
 	auth "github.com/envoyproxy/go-control-plane/envoy/service/auth/v3"
 	envoy_type "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/gogo/googleapis/google/rpc"
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/spiffe/go-spiffe/v2/svid/jwtsvid"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	rpcstatus "google.golang.org/genproto/googleapis/rpc/status"
@@ -126,9 +125,7 @@ func (a *AuthServer) injectJWTSVID(ctx context.Context) (*auth.CheckResponse, er
 	response := &auth.CheckResponse{}
 	headers := []*core.HeaderValueOption{
 		{
-			Append: &wrappers.BoolValue{
-				Value: false, //Default is true
-			},
+			AppendAction: core.HeaderValueOption_OVERWRITE_IF_EXISTS_OR_ADD,
 			Header: &core.HeaderValue{
 				Key:   "authorization",
 				Value: fmt.Sprintf("Bearer %s", jwtSVID.Marshal()),
