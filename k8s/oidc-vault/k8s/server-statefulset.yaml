@@ -52,7 +52,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 5
         - name: spire-oidc
-          image: ghcr.io/spiffe/oidc-discovery-provider:1.5.1
+          image: ghcr.io/spiffe/oidc-discovery-provider:1.5.3
           args:
           - -config
           - /run/spire/oidc/config/oidc-discovery-provider.conf
@@ -71,7 +71,7 @@ spec:
             readOnly: false
           readinessProbe:
             httpGet:
-              path: /keys # TODO: Change this to /ready when using 1.5.2+
+              path: /ready
               port: 8008
             failureThreshold: 5
             initialDelaySeconds: 5
