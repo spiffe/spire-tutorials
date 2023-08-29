@@ -35,6 +35,27 @@ $ bash scripts/pre-set-env.sh
 
 The script will create all the resources needed for the SPIRE Server and SPIRE Agent to be available in the cluster.
 
+## External IP support
+
+This tutorial requires a LoadBalancer that can assign an external IP (e.g., [metallb](https://metallb.universe.tf/))
+
+```console
+$ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
+```
+
+Wait until metallb has started
+```console
+$ kubectl wait --namespace metallb-system \
+                --for=condition=ready pod \
+                --selector=app=metallb \
+                --timeout=90s
+```
+
+Apply metallb configuration
+
+```console
+$ kubectl apply -f metallb-config.yaml
+```
 
 # Envoy SDS Support
 
@@ -89,9 +110,14 @@ clusters:
 - name: spire_agent
   connect_timeout: 0.25s
   http2_protocol_options: {}
-  hosts:
-    - pipe:
-        path: /run/spire/sockets/agent.sock
+  load_assignment:	
+    cluster_name: spire_agent
+    endpoints:	
+    - lb_endpoints:	
+      - endpoint:	
+          address:	
+            pipe:	
+              path: /run/spire/sockets/agent.sock
 ```
 
 ### TLS Certificates
@@ -100,31 +126,42 @@ To obtain a TLS certificate and private key from SPIRE, you set up an SDS config
 Furthermore SPIRE provides a validation context per trust domain that Envoy uses to verify peer certificates.
 
 ```console
-tls_context:
-   common_tls_context:
+transport_socket:
+  name: envoy.transport_sockets.tls
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+    common_tls_context:
       tls_certificate_sds_secret_configs:
       - name: "spiffe://example.org/ns/default/sa/default/backend"
-      sds_config:
-         api_config_source:
+        sds_config:
+          resource_api_version: V3
+          api_config_source:
             api_type: GRPC
+            transport_api_version: V3
             grpc_services:
-            envoy_grpc:
-               cluster_name: spire_agent
+              envoy_grpc:
+                cluster_name: spire_agent
       combined_validation_context:
-      # validate the SPIFFE ID of incoming clients (optionally)
-      default_validation_context:
-         match_subject_alt_names:
-            - "spiffe://example.org/ns/default/sa/default/frontend"
-            - "spiffe://example.org/ns/default/sa/default/frontend-2"
-      # obtain the trust bundle from SDS
-      validation_context_sds_secret_config:
-         name: "spiffe://example.org"
-         sds_config:
+        # validate the SPIFFE ID of incoming clients (optionally)
+        default_validation_context:
+          match_typed_subject_alt_names:
+          - san_type: URI
+            matcher:
+              exact: "spiffe://example.org/ns/default/sa/default/frontend"
+          - san_type: URI
+            matcher:
+              exact: "spiffe://example.org/ns/default/sa/default/frontend-2"
+        # obtain the trust bundle from SDS
+        validation_context_sds_secret_config:
+          name: "spiffe://example.org"
+          sds_config:
+            resource_api_version: V3
             api_config_source:
-            api_type: GRPC
-            grpc_services:
-               envoy_grpc:
-                 cluster_name: spire_agent
+              api_type: GRPC
+              transport_api_version: V3
+              grpc_services:
+                envoy_grpc:
+                  cluster_name: spire_agent
 ```
 
 Similar configurations are set on both frontend services to establish an mTLS communication. Check the configuration of the cluster named `backend` in `k8s/frontend/config/envoy.yaml` and `k8s/frontend-2/config/envoy.yaml`.
@@ -205,7 +242,7 @@ Following the same steps, when you connect to the URL for the `frontend-2` servi
 
 ## Update the TLS Configuration So Only One Frontend Can Access the Backend
 
-The Envoy configuration for the `backend` service uses the TLS configuration to filter incoming connections by validating the Subject Alternative Name (SAN) of the certificate presented on the TLS connection. For SVIDs, the SAN field of the certificate is set with the SPIFFE ID associated with the service. So by specifying the SPIFFE IDs in the `match_subject_alt_names` filter we indicate to Envoy which services can establish a connection.
+The Envoy configuration for the `backend` service uses the TLS configuration to filter incoming connections by validating the Subject Alternative Name (SAN) of the certificate presented on the TLS connection. For SVIDs, the SAN field of the certificate is set with the SPIFFE ID associated with the service. So by specifying the SPIFFE IDs in the `match_typed_subject_alt_names` filter we indicate to Envoy which services can establish a connection.
 
 Let's now update the Envoy configuration for the `backend` service to allow requests from the `frontend` service only. This is achieved by removing the SPIFFE ID of the `frontend-2` service from the `combined_validation_context` section at the [Envoy configuration](k8s/backend/config/envoy.yaml#L49). The updated configuration looks like this:
 
@@ -213,9 +250,10 @@ Let's now update the Envoy configuration for the `backend` service to allow requ
 combined_validation_context:
   # validate the SPIFFE ID of incoming clients (optionally)
   default_validation_context:
-    match_subject_alt_names:
-      - exact: "spiffe://example.org/ns/default/sa/default/frontend"
-
+    match_typed_subject_alt_names:
+    - san_type: URI
+      matcher:
+        exact: "spiffe://example.org/ns/default/sa/default/frontend"
 ```
 
 ## Apply the New Configuration for Envoy
@@ -256,7 +294,8 @@ The following snippet can be added to the Envoy configuration for the `backend` 
 
 ```console
 - name: envoy.filters.http.rbac
-  config:
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.filters.http.rbac.v3.RBAC
     rules:
       action: ALLOW
       policies:

@@ -24,12 +24,17 @@ spec:
           # This is a small image with wait-for-it, choose whatever image
           # you prefer that waits for a service to be up. This image is built
           # from https://github.com/lqhl/wait-for-it
-          image: gcr.io/spiffe-io/wait-for-it
+          image: cgr.dev/chainguard/wait-for-it
           args: ["-t", "30", "spire-server:8081"]
       containers:
         - name: spire-agent
           image: ghcr.io/spiffe/spire-agent:1.5.1
           args: ["-config", "/run/spire/config/agent.conf"]
+          env:
+          - name: MY_NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
           volumeMounts:
             - name: spire-config
               mountPath: /run/spire/config
