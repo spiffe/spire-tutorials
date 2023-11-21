@@ -16,7 +16,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/cncf/xds/go v0.0.0-20230310173818-32f1caf87195 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.10.1 // indirect
-	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/zeebo/errs v1.3.0 // indirect
 	golang.org/x/crypto v0.7.0 // indirect
