@@ -34,6 +34,7 @@ data:
           # Minikube does not have a cert in the cluster CA bundle that
           # can authenticate the kubelet cert, so skip validation.
           skip_kubelet_verification = true
+          node_name_env = "MY_NODE_NAME"
         }
       }
 

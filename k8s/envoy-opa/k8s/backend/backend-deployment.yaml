@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: envoy
-        image: envoyproxy/envoy-alpine:v1.14.1
+        image: envoyproxy/envoy:v1.25.1
         imagePullPolicy: Always
         args: ["-l", "debug", "--local-address-ip-version", "v4", "-c", "/run/envoy/envoy.yaml"]
         ports:
@@ -42,7 +42,7 @@ spec:
           mountPath: "/usr/share/nginx/html/transactions"
           readOnly: true
       - name: opa
-        image: openpolicyagent/opa:0.24.0-envoy-5
+        image: openpolicyagent/opa:0.50.2-envoy
         imagePullPolicy: IfNotPresent
         ports:
           - name: opa-envoy

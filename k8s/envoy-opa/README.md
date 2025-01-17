@@ -38,6 +38,27 @@ The script will create all the resources needed for the SPIRE Server and SPIRE A
 
 **Note:** The configuration changes needed to enable Envoy and OPA to work with SPIRE are shown as snippets in this tutorial. However, all of these settings have already been configured. You don't have to edit any configuration files.
 
+## External IP support
+
+This tutorial requires a LoadBalancer that can assign an external IP (e.g., [metallb](https://metallb.universe.tf/))
+
+```console
+$ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
+```
+
+Wait until metallb has started
+```console
+$ kubectl wait --namespace metallb-system \
+                --for=condition=ready pod \
+                --selector=app=metallb \
+                --timeout=90s
+```
+
+Apply metallb configuration
+
+```console
+$ kubectl apply -f ../envoy-x509/metallb-config.yaml
+```
 
 # Part 1: Deploy Updated and New Resources
 
@@ -51,26 +72,26 @@ The new container is added and configured as follows in [`backend-deployment.yam
 
 ```console
 - name: opa
-   image: openpolicyagent/opa:0.24.0-envoy-5
-   imagePullPolicy: Always
-   ports:
-      - name: opa-envoy
+  image: openpolicyagent/opa:0.50.2-envoy
+  imagePullPolicy: IfNotPresent
+  ports:
+    - name: opa-envoy
       containerPort: 8182
       protocol: TCP
-      - name: opa-api-port
+    - name: opa-api-port
       containerPort: 8181
       protocol: TCP
-   args:
-      - "run"
-      - "--server"
-      - "--config-file=/run/opa/opa-config.yaml"
-      - "/run/opa/opa-policy.rego"
-   volumeMounts:
-      - name: backend-opa-policy
+  args:
+    - "run"
+    - "--server"
+    - "--config-file=/run/opa/opa-config.yaml"
+    - "/run/opa/opa-policy.rego"
+  volumeMounts:
+    - name: backend-opa-policy
       mountPath: /run/opa
       readOnly: true
 ```
-One thing to note is the use of the `openpolicyagent/opa:0.24.0-envoy-5` image. This image extends OPA with a gRPC server that implements the Envoy External Authorization API so OPA can communicate policy decisions with Envoy.
+One thing to note is the use of the `openpolicyagent/opa:0.50.2-envoy` image. This image extends OPA with a gRPC server that implements the Envoy External Authorization API so OPA can communicate policy decisions with Envoy.
 
 The ConfigMap `backend-opa-policy` needs to be added into the `volumes` section, like this:
 
@@ -192,7 +213,8 @@ Finally, this setup requires an External Authorization Filter that connects to t
 ```console
 - name: envoy.ext_authz
   typed_config:
-    "@type": type.googleapis.com/envoy.config.filter.http.ext_authz.v2.ExtAuthz
+    "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+    transport_api_version: V3
     with_request_body:
       max_request_bytes: 8192
       allow_partial_message: true
