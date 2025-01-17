@@ -36,7 +36,7 @@ check-entry-is-propagated() {
   # Wait one second between checks.
   log "Checking registration entry is propagated..."
   for ((i=1;i<=30;i++)); do
-      if docker-compose -f "${PARENT_DIR}"/docker-compose.yaml logs $1 | grep -qe "$2"; then
+      if docker compose -f "${PARENT_DIR}"/docker-compose.yaml logs $1 | grep -qe "$2"; then
           log "${green}Entry is propagated.${nn}"
           return 0
       fi
@@ -66,17 +66,17 @@ log "Generate certificates for the root SPIRE deployment"
 setup "${PARENT_DIR}"/root/server "${PARENT_DIR}"/root/agent
 
 log "Start root server"
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml up -d root-server
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml up -d root-server
 
 log "bootstrapping root-agent."
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T root-server /opt/spire/bin/spire-server bundle show > "${PARENT_DIR}"/root/agent/bootstrap.crt
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T root-server /opt/spire/bin/spire-server bundle show > "${PARENT_DIR}"/root/agent/bootstrap.crt
 
 log "Start root agent"
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml up -d root-agent
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml up -d root-agent
 
 # Creates registration entries for the nested servers
 log "creating nestedA downstream registration entry..."
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T root-server \
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T root-server \
     /opt/spire/bin/spire-server entry create \
     -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint "${PARENT_DIR}"/root/agent/agent.crt.pem)" \
     -spiffeID "spiffe://example.org/nestedA" \
@@ -86,7 +86,7 @@ docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T root-server \
 check-entry-is-propagated root-agent spiffe://example.org/nestedA
 
 log "creating nestedB downstream registration entry..."
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T root-server \
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T root-server \
     /opt/spire/bin/spire-server entry create \
     -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint "${PARENT_DIR}"/root/agent/agent.crt.pem)" \
     -spiffeID "spiffe://example.org/nestedB" \
@@ -101,13 +101,13 @@ log "Generate certificates for the nestedA deployment"
 setup "${PARENT_DIR}"/nestedA/server "${PARENT_DIR}"/nestedA/agent
 
 log "Starting nestedA-server.."
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml up -d nestedA-server
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml up -d nestedA-server
 
 log "bootstrapping nestedA agent..."
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedA-server /opt/spire/bin/spire-server bundle show > "${PARENT_DIR}"/nestedA/agent/bootstrap.crt
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedA-server /opt/spire/bin/spire-server bundle show > "${PARENT_DIR}"/nestedA/agent/bootstrap.crt
 
 log "Starting nestedA-agent..."
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml up -d nestedA-agent
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml up -d nestedA-agent
 
 
 # Starts nestedB SPIRE deployment
@@ -115,10 +115,10 @@ log "Generate certificates for the nestedB deployment"
 setup "${PARENT_DIR}"/nestedB/server "${PARENT_DIR}"/nestedB/agent
 
 log "Starting nestedB-server.."
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml up -d nestedB-server
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml up -d nestedB-server
 
 log "bootstrapping nestedB agent..."
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedB-server /opt/spire/bin/spire-server bundle show > "${PARENT_DIR}"/nestedB/agent/bootstrap.crt
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedB-server /opt/spire/bin/spire-server bundle show > "${PARENT_DIR}"/nestedB/agent/bootstrap.crt
 
 log "Starting nestedB-agent..."
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml up -d nestedB-agent
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml up -d nestedB-agent
