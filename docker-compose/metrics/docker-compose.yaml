@@ -1,4 +1,3 @@
-version: '3'
 services:
   graphite-statsd:
     image: graphiteapp/graphite-statsd:1.1.7-6
