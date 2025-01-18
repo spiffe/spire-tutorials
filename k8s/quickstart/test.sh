@@ -24,7 +24,7 @@ start_minikube() {
 	if [ -z "${GITHUB_WORKFLOW}" ]; then
 		echo "${bold}Starting minikube... ${norm}"
 		${MINIKUBECMD} start
-		eval $(${MINIKUBECMD} docker-env)
+		eval $(${MINIKUBECMD} docker-env --shell=bash)
 	fi
 }
 
