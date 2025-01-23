@@ -1,11 +1,11 @@
-FROM golang:bookworm as build-stage
+FROM golang:bookworm AS build-stage
 
 WORKDIR /app
 COPY . .
 RUN go mod download
 RUN go build
 
-FROM debian:bookworm-slim as production-stage
+FROM debian:bookworm-slim AS production-stage
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt full-upgrade -y && \
 apt install -y dumb-init iputils-ping curl procps
 

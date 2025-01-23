@@ -108,7 +108,7 @@ The Docker Compose definition for the `nestedA-server` service in the [docker-co
 The `nestedA-server` must be registered on the `root-server` to obtain its identity which will be used to mint SVIDs. We achieve this by creating a registration entry in the root SPIRE Server for the `nestedA-server`.
 
 ```console
-   docker-compose exec -T root-server \
+   docker compose exec -T root-server \
        /opt/spire/bin/spire-server entry create \
        -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint root/agent/agent.crt.pem)" \
        -spiffeID "spiffe://example.org/nestedA" \
@@ -132,7 +132,7 @@ Ensure that the current working directory is `.../spire-tutorials/docker-compose
 Once the script is completed, in another terminal run the following command to review the logs from all the services:
 
 ```console
-    docker-compose logs -f -t
+    docker compose logs -f -t
 ```
 
 
@@ -146,14 +146,14 @@ To test the scenario we create two workload registration entries, one entry for 
 
 ```console
    # Workload for nestedA deployment
-   docker-compose exec -T nestedA-server \
+   docker compose exec -T nestedA-server \
        /opt/spire/bin/spire-server entry create \
        -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint nestedA/agent/agent.crt.pem)" \
        -spiffeID "spiffe://example.org/nestedA/workload" \
        -selector "unix:uid:1001" \
 
    # Workload for nestedB deployment
-   docker-compose exec -T nestedB-server \
+   docker compose exec -T nestedB-server \
        /opt/spire/bin/spire-server entry create \
        -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint nestedB/agent/agent.crt.pem)" \
        -spiffeID "spiffe://example.org/nestedB/workload" \
@@ -177,14 +177,14 @@ The test consists of getting a JWT-SVID from the `nestedA-agent` SPIRE Agent and
 Type this command to fetch the JWT-SVID on the `nestedA` SPIRE Agent and extract the token from the JWT-SVID:
 
 ```console
-    token=$(docker-compose exec -u 1001 -T nestedA-agent \
+    token=$(docker compose exec -u 1001 -T nestedA-agent \
       /opt/spire/bin/spire-agent api fetch jwt -audience nested-test -socketPath /opt/spire/sockets/workload_api.sock | sed -n '2p')
 ```
 
 Run the following command to validate the token from `nestedA` on the `nestedB` SPIRE Agent:
 
 ```console
-    docker-compose exec -u 1001 -T nestedB-agent \
+    docker compose exec -u 1001 -T nestedB-agent \
         /opt/spire/bin/spire-agent api validate jwt -audience nested-test  -svid "${token}" \
           -socketPath /opt/spire/sockets/workload_api.sock
 ```

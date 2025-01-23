@@ -34,7 +34,7 @@ clean-env
 bash "${DIR}"/scripts/set-env.sh
 
 for ((i=0;i<60;i++)); do
-    if docker-compose -f "${DIR}"/docker-compose.yaml exec -T broker-webapp wget localhost:8080/quotes -O - 2>&1 | grep -qe "Quotes service unavailable"; then
+    if docker compose -f "${DIR}"/docker-compose.yaml exec -T broker-webapp wget localhost:8080/quotes -O - 2>&1 | grep -qe "Quotes service unavailable"; then
 	log "Service not found, retrying..."
 	sleep 1
 	continue
