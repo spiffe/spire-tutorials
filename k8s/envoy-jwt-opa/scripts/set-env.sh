@@ -39,7 +39,7 @@ wait_for_envoy() {
     LOGLINE="all dependencies initialized. starting workers"
     LOGLINE2="membership update for TLS cluster backend added 1 removed 1"
     for ((i=0;i<30;i++)); do
-        if ! kubectl logs --tail=100 --selector=app=backend -c envoy | grep -qe "${LOGLINE}" ; then
+        if ! kubectl logs --tail=1000 --selector=app=backend -c envoy | grep -qe "${LOGLINE}" ; then
             sleep 5
             echo "Waiting until backend envoy instance is ready..."
             continue
