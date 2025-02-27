@@ -28,7 +28,7 @@ spec:
           args: ["-t", "30", "spire-server:8081"]
       containers:
         - name: spire-agent
-          image: ghcr.io/spiffe/spire-agent:1.11.1
+          image: ghcr.io/spiffe/spire-agent:1.11.2
           args: ["-config", "/run/spire/config/agent.conf"]
           env:
           - name: MY_NODE_NAME
