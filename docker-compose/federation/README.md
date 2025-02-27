@@ -16,8 +16,8 @@ In this tutorial you will learn how to:
 
 The baseline components for SPIFFE federation are:
 
-* Two SPIRE Server instances running version 1.5.1.
-* Two SPIRE Agents running version 1.5.1. One connected to one SPIRE Server, and the second connected to the other SPIRE Server.
+* Two SPIRE Server instances running version 1.11.2.
+* Two SPIRE Agents running version 1.11.2. One connected to one SPIRE Server, and the second connected to the other SPIRE Server.
 * Two workloads that need to communicate each other via mTLS, and use the Workload API to get SVIDs and trust bundles.
 
 # Scenario
