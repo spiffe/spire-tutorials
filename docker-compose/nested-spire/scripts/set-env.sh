@@ -47,6 +47,22 @@ check-entry-is-propagated() {
   exit 1
 }
 
+check-server-is-ready() {
+  # Check at most 30 times that the agent has successfully synced down the workload entry.
+  # Wait one second between checks.
+  log "Checking server is ready..."
+  for ((i=1;i<=30;i++)); do
+      if docker compose -f "${PARENT_DIR}"/docker-compose.yaml logs $1 | grep -qe "Starting Server APIs"; then
+          log "${green}Server is ready.${nn}"
+          return 0
+      fi
+      sleep 1
+  done
+
+  log "${red}timed out waiting for the entry to be progagated to the agent${norm}"
+  exit 1
+}
+
 # create a shared folder for root agent socket to be accessed by nestedA and nestedB servers
 mkdir -p "${PARENT_DIR}"/sharedRootSocket
 
@@ -93,6 +109,8 @@ setup "${PARENT_DIR}"/nestedA/server "${PARENT_DIR}"/nestedA/agent
 log "Starting nestedA-server.."
 docker compose -f "${PARENT_DIR}"/docker-compose.yaml up -d nestedA-server
 
+check-server-is-ready nestedA-server
+
 log "bootstrapping nestedA agent..."
 docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedA-server /opt/spire/bin/spire-server bundle show > "${PARENT_DIR}"/nestedA/agent/bootstrap.crt
 
@@ -106,6 +124,8 @@ setup "${PARENT_DIR}"/nestedB/server "${PARENT_DIR}"/nestedB/agent
 
 log "Starting nestedB-server.."
 docker compose -f "${PARENT_DIR}"/docker-compose.yaml up -d nestedB-server
+
+check-server-is-ready nestedA-server
 
 log "bootstrapping nestedB agent..."
 docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedB-server /opt/spire/bin/spire-server bundle show > "${PARENT_DIR}"/nestedB/agent/bootstrap.crt
