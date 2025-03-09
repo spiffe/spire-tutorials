@@ -125,7 +125,7 @@ setup "${PARENT_DIR}"/nestedB/server "${PARENT_DIR}"/nestedB/agent
 log "Starting nestedB-server.."
 docker compose -f "${PARENT_DIR}"/docker-compose.yaml up -d nestedB-server
 
-check-server-is-ready nestedA-server
+check-server-is-ready nestedB-server
 
 log "bootstrapping nestedB agent..."
 docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedB-server /opt/spire/bin/spire-server bundle show > "${PARENT_DIR}"/nestedB/agent/bootstrap.crt
