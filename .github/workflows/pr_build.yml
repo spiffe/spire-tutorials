@@ -6,12 +6,12 @@ on:
   pull_request: {}
   workflow_dispatch: {}
 env:
-  GO_VERSION: 1.19.4
+  GO_VERSION: 1.24.0
   CHANGE_MINIKUBE_NONE_USER: true
   TERM: xterm
 jobs:
   test-all:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps: 
       - name: Checkout

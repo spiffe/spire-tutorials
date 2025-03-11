@@ -44,7 +44,7 @@ wait_for_envoy() {
             echo "Waiting until backend envoy instance is ready..."
             continue
         fi
-        if ! kubectl logs --tail=30 --selector=app=frontend -c envoy | grep -qe "${LOGLINE2}" ; then
+        if ! kubectl logs --tail=1000 --selector=app=frontend -c envoy | grep -qe "${LOGLINE2}" ; then
             sleep 5
             echo "Waiting until frontend envoy instance is in sync with the backend envoy..."
             continue
