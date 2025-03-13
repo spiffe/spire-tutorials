@@ -31,6 +31,20 @@ fingerprint() {
 	openssl x509 -in "$1" -outform DER | openssl sha1 -r | awk '{print $1}'
 }
 
+wait-for-server() {
+  for ((i=1;i<=30;i++)); do
+    if ! docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T $1 /opt/spire/bin/spire-server healthcheck; then
+        log "Waiting for $1 to start..."
+        sleep 1
+    else
+      log "${green}$1 is up and running.${norm}"
+      return 0
+    fi
+  done
+  log "${red}$1 did not start.${norm}"
+  return 1
+}
+
 check-entry-is-propagated() {
   # Check at most 30 times that the agent has successfully synced down the workload entry.
   # Wait one second between checks.
@@ -63,16 +77,15 @@ check-server-is-ready() {
   exit 1
 }
 
-# create a shared folder for root agent socket to be accessed by nestedA and nestedB servers
-mkdir -p "${PARENT_DIR}"/sharedRootSocket
-
-
 # Starts root SPIRE deployment
 log "Generate certificates for the root SPIRE deployment"
 setup "${PARENT_DIR}"/root/server "${PARENT_DIR}"/root/agent
 
 log "Start root server"
 docker compose -f "${PARENT_DIR}"/docker-compose.yaml up -d root-server
+
+wait-for-server root-server
+docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T root-server /opt/spire/bin/spire-server bundle show > "${PARENT_DIR}"/root/agent/bootstrap.crt
 
 log "bootstrapping root-agent."
 docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T root-server /opt/spire/bin/spire-server bundle show > "${PARENT_DIR}"/root/agent/bootstrap.crt
@@ -111,6 +124,7 @@ docker compose -f "${PARENT_DIR}"/docker-compose.yaml up -d nestedA-server
 
 check-server-is-ready nestedA-server
 
+wait-for-server nestedA-server
 log "bootstrapping nestedA agent..."
 docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedA-server /opt/spire/bin/spire-server bundle show > "${PARENT_DIR}"/nestedA/agent/bootstrap.crt
 
@@ -127,6 +141,7 @@ docker compose -f "${PARENT_DIR}"/docker-compose.yaml up -d nestedB-server
 
 check-server-is-ready nestedB-server
 
+wait-for-server nestedB-server
 log "bootstrapping nestedB agent..."
 docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedB-server /opt/spire/bin/spire-server bundle show > "${PARENT_DIR}"/nestedB/agent/bootstrap.crt
 
