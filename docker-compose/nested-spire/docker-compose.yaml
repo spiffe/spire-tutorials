@@ -15,9 +15,9 @@ services:
     hostname: root-agent
     volumes:
       # Share root-agent socket to be accessed by nested servers
-      - ./sharedRootSocket:/opt/spire/sockets
+      - spire-sockets:/opt/spire/sockets
       - ./root/agent:/opt/spire/conf/agent
-      - /var/run/:/var/run/
+      - /var/run/docker.sock:/var/run/docker.sock
     command: ["-config", "/opt/spire/conf/agent/agent.conf"]
   # NestedA
   nestedA-server:
@@ -31,7 +31,7 @@ services:
     depends_on: ["root-server","root-agent"]
     volumes:
       # Add root-agent socket
-      - ./sharedRootSocket:/opt/spire/sockets
+      - spire-sockets:/opt/spire/sockets
       - ./nestedA/server:/opt/spire/conf/server
     command: ["-config", "/opt/spire/conf/server/server.conf"]
   nestedA-agent:
@@ -40,7 +40,7 @@ services:
     depends_on: ["nestedA-server"]
     volumes:
       - ./nestedA/agent:/opt/spire/conf/agent
-      - /var/run/:/var/run/
+      - /var/run/docker.sock:/var/run/docker.sock
     command: ["-config", "/opt/spire/conf/agent/agent.conf"]
   nestedB-server:
     # Share the host pid namespace so this server can be attested by the root agent
@@ -53,7 +53,7 @@ services:
       - org.example.name=nestedB-server
     volumes:
       # Add root-agent socket
-      - ./sharedRootSocket:/opt/spire/sockets
+      - spire-sockets:/opt/spire/sockets
       - ./nestedB/server:/opt/spire/conf/server
     command: ["-config", "/opt/spire/conf/server/server.conf"]
   nestedB-agent:
@@ -62,5 +62,15 @@ services:
     depends_on: ["nestedB-server"]
     volumes:
       - ./nestedB/agent:/opt/spire/conf/agent
-      - /var/run/:/var/run/
+      - /var/run/docker.sock:/var/run/docker.sock
     command: ["-config", "/opt/spire/conf/agent/agent.conf"]
+
+volumes:
+  # Allows macs to have functional domain sockets between spire agents and
+  # servers by avoiding a volume mount to the host filesystem and instead
+  # creating a tmpfs volume to be used as a socket directory.
+  spire-sockets:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
