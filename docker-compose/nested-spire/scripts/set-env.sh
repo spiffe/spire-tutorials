@@ -71,10 +71,6 @@ fi
 sed -i.bak "s#\#container_id_cgroup_matchers#container_id_cgroup_matchers#" "${PARENT_DIR}"/root/agent/agent.conf
 sed -i.bak "s#CGROUP_MATCHERS#$CGROUP_MATCHERS#" "${PARENT_DIR}"/root/agent/agent.conf
 
-# create a shared folder for root agent socket to be accessed by nestedA and nestedB servers
-mkdir -p "${PARENT_DIR}"/sharedRootSocket
-
-
 # Starts root SPIRE deployment
 log "Generate certificates for the root SPIRE deployment"
 setup "${PARENT_DIR}"/root/server "${PARENT_DIR}"/root/agent

@@ -34,21 +34,21 @@ Before proceeding, review the following system requirements:
 
 This tutorial's `nested-spire` main directory contains three subdirectories, one for each of the SPIRE deployments: `root`, `nestedA` and `nestedB`. These directories hold the configuration files for the SPIRE Servers and Agents. They will also contain the private keys and certificates created to attest the Agents on the Servers with the [x509pop Node Attestor](https://github.com/spiffe/spire/blob/main/doc/plugin_server_nodeattestor_x509pop.md) plugin. Private keys and certificates are created at the initialization of the scenario using a Go application, the details of which are out of the scope of this tutorial.
 
-## Create a Shared Directory
+## The Shared Socket Directory
 
-The first thing needed is a local directory that will be volume mounted on the services to share the Workload API between the root SPIRE Agent and its nested SPIRE Servers. This tutorial uses `.../spire-tutorials/docker-compose/nested-spire/sharedRootSocket` as the shared directory.
+We use a shared directory that will be volume mounted on the services to share the Workload API between the root SPIRE Agent and its nested SPIRE Servers. This tutorial uses a named volume in its docker-compose configuration to share the Workload API socket.
 
 ## Configuring Root SPIRE Deployment
 
 Configuration files for [root-server](root/server/server.conf) and [root-agent](root/agent/agent.conf) have not been changed from the default `server.conf` and `agent.conf` files, but it's worth noting the location defined to bind the workload API socket by the SPIRE Agent: `socket_path ="/opt/spire/sockets/workload_api.sock"`. This path will be used later to configure a volume to share the Workload API with the nested SPIRE Servers.
 
-We define all the services for the tutorial in the [docker-compose.yaml](docker-compose.yaml) file. In the `root-agent` service definition we mount the `/opt/spire/sockets` directory from the SPIRE Agent container on the new local directory `sharedRootSocket`. In the next section, when defining the nested SPIRE Server services, we'll use this directory to mount the `root-agent` socket on the SPIRE Server containers.
+We define all the services for the tutorial in the [docker-compose.yaml](docker-compose.yaml) file. In the `root-agent` service definition we mount the `/opt/spire/sockets` directory from the SPIRE Agent container on the named `spire-sockets` volume. In the next section, when defining the nested SPIRE Server services, we'll use this directory to mount the `root-agent` socket on the SPIRE Server containers.
 
 ```console
    services:
      # Root
      root-server:
-       image: ghcr.io/spiffe/spire-server:1.5.1
+       image: ghcr.io/spiffe/spire-server:1.11.2
        hostname: root-server
        volumes:
          - ./root/server:/opt/spire/conf/server
@@ -56,12 +56,12 @@ We define all the services for the tutorial in the [docker-compose.yaml](docker-
      root-agent:
        # Share the host pid namespace so this agent can attest the nested servers
        pid: "host"
-       image: ghcr.io/spiffe/spire-agent:1.5.1
+       image: ghcr.io/spiffe/spire-agent:1.11.2
        depends_on: ["root-server"]
        hostname: root-agent
        volumes:
          # Share root agent socket to be accessed by nestedA and nestedB servers
-         - ./sharedRootSocket:/opt/spire/sockets
+         - spire-sockets:/opt/spire/sockets
          - ./root/agent:/opt/spire/conf/agent
          - /var/run/:/var/run/
        command: ["-config", "/opt/spire/conf/agent/agent.conf"]
@@ -85,7 +85,7 @@ The configuration file for the [nestedA-server](./nestedA/server/server.conf) in
     }
 ```
 
-The Docker Compose definition for the `nestedA-server` service in the [docker-compose.yaml](docker-compose.yaml) file mounts the new local directory `sharedRootSocket` as a volume. Remember from the previous section that the `root-agent` socket is mounted on that directory. That way the `nestedA-server` can access the `root-agent` workload API and fetch its SVID.
+The Docker Compose definition for the `nestedA-server` service in the [docker-compose.yaml](docker-compose.yaml) file mounts the `spire-sockets` named volume. Remember from the previous section that the `root-agent` socket is mounted on that directory. That way the `nestedA-server` can access the `root-agent` workload API and fetch its SVID.
 
 ```console
    nestedA-server:
@@ -97,8 +97,8 @@ The Docker Compose definition for the `nestedA-server` service in the [docker-co
        # label to attest nestedA-server against root-agent
        - org.example.name=nestedA
      volumes:
-       # Add root agent socket  
-       - ./shared/rootSocket:/opt/spire/sockets
+       # Add root agent socket
+       - spire-sockets:/opt/spire/sockets
        - ./nestedA/server:/opt/spire/conf/server
      command: ["-config", "/opt/spire/conf/server/server.conf"]
 ```
