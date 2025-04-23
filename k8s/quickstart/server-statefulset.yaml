@@ -18,6 +18,8 @@ spec:
         app: spire-server
     spec:
       serviceAccountName: spire-server
+      securityContext:
+        fsGroup: 1000
       containers:
         - name: spire-server
           image: ghcr.io/spiffe/spire-server:1.11.2
