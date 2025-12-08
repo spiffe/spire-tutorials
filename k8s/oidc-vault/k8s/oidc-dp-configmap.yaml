@@ -7,7 +7,7 @@ data:
   oidc-discovery-provider.conf: |
     log_level = "INFO"
     # TODO: Replace MY_DISCOVERY_DOMAIN with the FQDN of the Discovery Provider that you will configure in DNS
-    domain = "MY_DISCOVERY_DOMAIN"
+    domains = ["MY_DISCOVERY_DOMAIN"]
     acme {
         directory_url = "https://acme-v02.api.letsencrypt.org/directory"
         cache_dir = "/run/spire"
