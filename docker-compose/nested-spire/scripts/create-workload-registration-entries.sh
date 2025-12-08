@@ -29,7 +29,7 @@ check-entry-is-propagated() {
   # Wait one second between checks.
   log "Checking registration entry is propagated..."
   for ((i=1;i<=30;i++)); do
-      if docker-compose -f "${PARENT_DIR}"/docker-compose.yaml logs $1 | grep -qe "$2"; then
+      if docker compose -f "${PARENT_DIR}"/docker-compose.yaml logs $1 | grep -qe "$2"; then
           log "${green}Entry is propagated.${nn}"
           return 0
       fi
@@ -43,7 +43,7 @@ check-entry-is-propagated() {
 
 # Workload for nestedA deployment
 log "creating nestedA workload registration entry..."
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedA-server \
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedA-server \
     /opt/spire/bin/spire-server entry create \
     -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint "${PARENT_DIR}"/nestedA/agent/agent.crt.pem)" \
     -spiffeID "spiffe://example.org/nestedA/workload" \
@@ -54,7 +54,7 @@ check-entry-is-propagated nestedA-agent spiffe://example.org/nestedA/workload
 
 # Workload for nestedB deployment
 log "creating nestedB workload registration entry..."
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedB-server \
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T nestedB-server \
     /opt/spire/bin/spire-server entry create \
     -parentID "spiffe://example.org/spire/agent/x509pop/$(fingerprint "${PARENT_DIR}"/nestedB/agent/agent.crt.pem)" \
     -spiffeID "spiffe://example.org/nestedB/workload" \

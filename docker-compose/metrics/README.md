@@ -128,7 +128,7 @@ $ bash scripts/set-env.sh
 
 Once the script is completed, in another terminal run the following command to review the logs from all the services:
 ```console
-$ docker-compose logs -f -t
+$ docker compose logs -f -t
 ```
 
 

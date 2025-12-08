@@ -16,8 +16,8 @@ In this tutorial you will learn how to:
 
 The baseline components for SPIFFE federation are:
 
-* Two SPIRE Server instances running version 1.5.1.
-* Two SPIRE Agents running version 1.5.1. One connected to one SPIRE Server, and the second connected to the other SPIRE Server.
+* Two SPIRE Server instances running version 1.11.2.
+* Two SPIRE Agents running version 1.11.2. One connected to one SPIRE Server, and the second connected to the other SPIRE Server.
 * Two workloads that need to communicate each other via mTLS, and use the Workload API to get SVIDs and trust bundles.
 
 # Scenario
@@ -289,7 +289,7 @@ $ ./build.sh
 Run the following command to start the SPIRE Servers and the applications:
 
 ```
-$ docker-compose up -d
+$ docker compose up -d
 ```
 
 ## Start SPIRE Agents 
@@ -327,7 +327,7 @@ Open up a browser to http://localhost:8080/quotes and you should see a grid of r
 To see the broker's SPIRE Server configuration you can run:
 
 ```
-$ docker-compose exec spire-server-broker cat conf/server/server.conf
+$ docker compose exec spire-server-broker cat conf/server/server.conf
 ```
 
 You should see:
@@ -385,7 +385,7 @@ plugins {
 To see the stock market's SPIRE Server configuration you can run:
 
 ```
-$ docker-compose exec spire-server-stock cat conf/server/server.conf
+$ docker compose exec spire-server-stock cat conf/server/server.conf
 ```
 
 You should see:
@@ -445,7 +445,7 @@ plugins {
 To see the broker's SPIRE Server registration entries you can run:
 
 ```
-$ docker-compose exec spire-server-broker bin/spire-server entry show
+$ docker compose exec spire-server-broker bin/spire-server entry show
 ```
 
 You should see something like this:
@@ -464,7 +464,7 @@ FederatesWith : spiffe://stockmarket.example
 To see the stock martket's SPIRE Server registration entries you can run:
 
 ```
-$ docker-compose exec spire-server-stock bin/spire-server entry show
+$ docker compose exec spire-server-stock bin/spire-server entry show
 ```
 
 You should see something like this:
@@ -483,5 +483,5 @@ FederatesWith : spiffe://broker.example
 ## Cleanup
 
 ```
-$ docker-compose down
+$ docker compose down
 ```

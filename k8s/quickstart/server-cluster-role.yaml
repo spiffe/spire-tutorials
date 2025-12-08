@@ -24,12 +24,15 @@ roleRef:
   kind: Role
   name: spire-server-configmap-role
 ---
-# ClusterRole to allow spire-server node attestor to query Token Review API
+# ClusterRole to allow spire-server node attestor to read pods and nodes, and query Token Review API
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: spire-server-trust-role
 rules:
+- apiGroups: [""]
+  resources: ["pods", "nodes"]
+  verbs: ["get"]
 - apiGroups: ["authentication.k8s.io"]
   resources: ["tokenreviews"]
   verbs: ["create"]

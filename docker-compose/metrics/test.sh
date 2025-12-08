@@ -29,7 +29,7 @@ log "Checking Statsd received metrics pushed by SPIRE..."
 
 STATSD_LOG_LINE="MetricLineReceiver connection with .* established"
 for ((i=0;i<60;i++)); do
-    if ! docker-compose -f "${DIR}"/docker-compose.yaml logs --tail=10 -t graphite-statsd | grep -qe "${STATSD_LOG_LINE}" ; then
+    if ! docker compose -f "${DIR}"/docker-compose.yaml logs --tail=10 -t graphite-statsd | grep -qe "${STATSD_LOG_LINE}" ; then
 	sleep 1
 	continue
     fi
@@ -43,7 +43,7 @@ fi
 
 log "Checking that Prometheus can reach the endpoint exposed by SPIRE..."
 for ((i=0;i<60;i++)); do
-    if ! docker-compose -f "${DIR}"/docker-compose.yaml exec -T prometheus wget -S spire-server:8088/ 2>&1 | grep -qe "200 OK" ; then
+    if ! docker compose -f "${DIR}"/docker-compose.yaml exec -T prometheus wget -S spire-server:8088/ 2>&1 | grep -qe "200 OK" ; then
 	sleep 1
 	continue
     fi

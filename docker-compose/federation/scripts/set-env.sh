@@ -24,7 +24,7 @@ check-entry-is-propagated() {
   # Wait one second between checks.
   log "Checking registration entry is propagated..."
   for ((i=1;i<=30;i++)); do
-      if docker-compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T $1 cat /opt/spire/agent.log 2>&1 | grep -qe "$2"; then
+      if docker compose -f "${PARENT_DIR}"/docker-compose.yaml exec -T $1 cat /opt/spire/agent.log 2>&1 | grep -qe "$2"; then
           log "${green}Entry is propagated.${nn}"
           return 0
       fi
@@ -40,7 +40,7 @@ log "Building"
 bash "${PARENT_DIR}"/build.sh
 
 log "Starting container"
-docker-compose -f "${PARENT_DIR}"/docker-compose.yaml up -d
+docker compose -f "${PARENT_DIR}"/docker-compose.yaml up -d
 
 bash "${PARENT_DIR}"/1-start-spire-agents.sh
 

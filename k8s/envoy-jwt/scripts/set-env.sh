@@ -49,7 +49,7 @@ wait_for_envoy() {
     LOGLINE="all dependencies initialized. starting workers"
     LOGLINE2="DNS hosts have changed for backend-envoy"
     for ((i=0;i<30;i++)); do
-        if ! kubectl logs --tail=300 --selector=app=frontend -c envoy | grep -qe "${LOGLINE}" ; then
+        if ! kubectl logs --tail=1000 --selector=app=frontend -c envoy | grep -qe "${LOGLINE}" ; then
             sleep 5
             echo "Waiting until Envoy is ready..."
             continue
