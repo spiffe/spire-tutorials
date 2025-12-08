@@ -39,6 +39,16 @@ port = 9010
 jwt_mode = "jwt_svid_validator"
 audience = "spiffe://example.org/myservice"
 ```
+Configuration values can be overridden using environment variables with 
+the `SPIRE_ENVOY_JWT_HELPER_` prefix followed by the configuration parameter name in uppercase.
+```
+export SPIRE_ENVOY_JWT_HELPER_SOCKET_PATH="unix:///run/secrets/workload-spiffe-uds"
+export SPIRE_ENVOY_JWT_HELPER_HOST="0.0.0.0"
+export SPIRE_ENVOY_JWT_HELPER_PORT=8080
+export SPIRE_ENVOY_JWT_HELPER_JWT_MODE="jwt_svid_validator"
+export SPIRE_ENVOY_JWT_HELPER_AUDIENCE="spiffe://example.org/myservice"
+```
+ 
 
 ## As Envoy External Authorization filter
 

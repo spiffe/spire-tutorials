@@ -3,22 +3,26 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/hashicorp/hcl"
+	"github.com/kelseyhightower/envconfig"
 )
+
+const EnvVarPrefix = "SPIRE_ENVOY_JWT_HELPER"
 
 // Config available configurations
 type Config struct {
-	SocketPath string `hcl:"socket_path"`
-	Host       string `hcl:"host"`
-	Port       int    `hcl:"port"`
-	JWTMode    string `hcl:"jwt_mode"`
-	Audience   string `hcl:"audience"`
+	SocketPath string `hcl:"socket_path" envconfig:"SOCKET_PATH"`
+	Host       string `hcl:"host"        envconfig:"HOST"`
+	Port       int    `hcl:"port"        envconfig:"PORT"`
+	JWTMode    string `hcl:"jwt_mode"    envconfig:"JWT_MODE"`
+	Audience   string `hcl:"audience"    envconfig:"AUDIENCE"`
 }
 
-//ParseConfigFile parse config file
+// ParseConfigFile parse config file
 func ParseConfigFile(filePath string) (*Config, error) {
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -39,5 +43,16 @@ func ParseConfigFile(filePath string) (*Config, error) {
 		return nil, fmt.Errorf("unable to decode configuration: %v", err)
 	}
 
+	err = envconfig.Process(EnvVarPrefix, c)
+	if err != nil {
+		return nil, fmt.Errorf("environment variable configuration overwrite failed: %v", err)
+	}
+	c.Print()
+
 	return c, nil
+}
+
+func (c *Config) Print() {
+	msg := "loaded config:\nSocketPath: %s \nHost: %s\nPort: %d\nJWTMode: %s\nAudience: %s\n"
+	log.Printf(msg, c.SocketPath, c.Host, c.Port, c.JWTMode, c.Audience)
 }
