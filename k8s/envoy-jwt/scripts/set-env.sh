@@ -70,7 +70,7 @@ wait_for_envoy() {
 }
 
 echo "${bb}Creating Envoy-x509 scenario...${nn}"
-bash "${EXAMPLEDIR}"/scripts/pre-set-env.sh > /dev/null
+bash "${EXAMPLEDIR}"/scripts/pre-set-env.sh
 
 echo "${bb}Applying SPIRE Envoy JWT configuration...${nn}"
 kubectl apply -k "${EXAMPLEDIR}"/k8s/. > /dev/null
